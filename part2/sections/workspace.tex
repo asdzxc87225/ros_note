@@ -1,0 +1,60 @@
+建立一個工作區並學習如何設定用於開發和測試的覆蓋層。
+
+工作空間是包含 ROS 2 套件的目錄。在使用 ROS 2 之前，有必要在您計劃使用的終端機中取得 ROS 2 安裝工作區。這使得 ROS 2 的軟體包可供您在該終端中使用。
+
+\begin{enumerate}
+    \item 建立工作的資料夾
+    \item 移動到src把程式下載在此
+    \item 回到工作區的根目錄
+    \item 檢查依賴
+    \item 建構程式
+\end{enumerate}
+
+\subsection{建構前的準備}
+在建構之前記的要先把程式下載好。
+\begin{verbatim}
+    mkdir -p ~/ros2_ws/src
+    cd ~/ros2_ws/src
+    git clone https://github.com/ros/ros_tutorials.git -b humble
+    cd ../ 
+    rosdep install -i --from-path src --rosdistro humble -y
+\end{verbatim}
+第一次的時後要記得初始化。
+\begin{verbatim}
+    rosdep install -i --from-path src --rosdistro humble -y
+
+    ERROR: your rosdep installation has not been initialized 
+    yet.  Please run:
+
+        sudo rosdep init
+        rosdep update
+\end{verbatim}
+如國沒又問題就會有下面的訊息
+\begin{verbatim}
+    All required rosdeps installed successfully
+\end{verbatim}
+
+\subsection{覆蓋工作區}
+覆蓋層中的包將覆蓋底層中的包。還可以有多層底層和覆蓋層，每個連續的覆蓋層都使用其父底層的包。
+
+您可以turtlesim透過編輯turtlesim視窗上的標題列來修改覆蓋層。
+請turtle\_frame.cpp在 中找到該檔案~/ros2\_ws/src/ros\_tutorials/turtlesim/src。
+
+turtle\_frame.cpp使用您喜歡的文字編輯器開啟。
+
+\begin{enumerate}
+    \item 找到turtle\_frame.cpp
+    \item 修改Title
+    \item 建構
+    \item 執行比較
+\end{enumerate}
+
+\begin{verbatim}
+    cd ~/ros2_ws/src/ros_tutorials/turtlesim/src/turtlesim/
+    vi turtle_frame.cpp 
+    # 修改記的存檔
+    colcon build
+    source install/local_setup.bash
+    ros2 run turtlesim turtlesim_node
+\end{verbatim}
+

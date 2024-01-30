@@ -1,0 +1,140 @@
+建立節點，這些節點透過主題以字串訊息的形式相互傳遞訊息。這裡使用的例子是一個簡單的「說話者」和「傾聽者」系統；一個節點發布數據，另一個節點訂閱該主題，以便它可以接收該數據。
+
+\subsection{建構包}
+打開一個新終端並取得 ROS 2 安裝的源代碼，以便ros2命令可以運行。
+
+\begin{verbatim}
+ros2 pkg create --build-type ament_python --license Apache-2.0 py_pubsub
+\end{verbatim}
+
+\subsection{編寫發布者節點}
+建構完成後前往py\_pubsub/py\_pubsub寫程式，這裡用其他大大提供的原始碼。
+
+\begin{verbatim}
+    wget https://raw.githubusercontent.com/ros2/\ 
+        examples/humble/rclpy/topics/minimal_publisher/\ 
+        examples_rclpy_minimal_publisher/\ 
+        publisher_member_function.py
+
+    wget https://raw.githubusercontent.com/ros2/examples/\ 
+        humble/rclpy/topics/minimal_subscriber/\ 
+        examples_rclpy_minimal_subscriber/\ 
+        subscriber_member_function.py
+\end{verbatim}
+
+\subsection{新增依賴}
+修改package.xml，在裡面加入相依的套件。
+
+\begin{verbatim}
+    <description>Examples of minimal publisher/subscriber using rclpy</description>
+    <maintainer email="you@email.com">Your Name</maintainer>
+    <license>Apache License 2.0</license>
+    <exec_depend>rclpy</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+
+    <exec_depend>rclpy</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+\end{verbatim}
+
+\subsection{新增入口點}
+入口點(entry\_points) talker 與 listener 是用使用時調用的名稱，等號右邊的是執行的程式檔名與要執行的funtion。
+
+\begin{verbatim}
+    entry_points={
+        'console_scripts': [
+                'talker = py_pubsub.publisher_member_function:main',
+                'listener = py_pubsub.subscriber_member_function:main',
+        ],
+    },
+\end{verbatim}
+
+\section{建構並運行}
+完成上面的設定之後就可以執行看看
+\begin{verbatim}
+    colcon build --packages-select py_pubsub
+    source install/setup.bash
+    ros2 run py_pubsub talker
+    ros2 run py_pubsub listener
+\end{verbatim}
+
+\subsection{程式碼}
+\begin{verbatim}
+import rclpy
+from rclpy.node import Node
+
+from std_msgs.msg import String
+
+
+class MinimalPublisher(Node):
+
+    def __init__(self):
+        super().__init__('minimal_publisher')
+        self.publisher_ = self.create_publisher(String, 'topic', 10)
+        timer_period = 0.5  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.i = 0
+
+    def timer_callback(self):
+        msg = String()
+        msg.data = 'Hello World: %d' % self.i
+        self.publisher_.publish(msg)
+        self.get_logger().info('Publishing: "%s"' % msg.data)
+        self.i += 1
+
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    minimal_publisher = MinimalPublisher()
+
+    rclpy.spin(minimal_publisher)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    minimal_publisher.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+\end{verbatim}
+\begin{verbatim}
+import rclpy
+from rclpy.node import Node
+
+from std_msgs.msg import String
+
+
+class MinimalSubscriber(Node):
+
+    def __init__(self):
+        super().__init__('minimal_subscriber')
+        self.subscription = self.create_subscription(
+            String,
+            'topic',
+            self.listener_callback,
+            10)
+        self.subscription  # prevent unused variable warning
+
+    def listener_callback(self, msg):
+        self.get_logger().info('I heard: "%s"' % msg.data)
+
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    minimal_subscriber = MinimalSubscriber()
+
+    rclpy.spin(minimal_subscriber)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    minimal_subscriber.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+\end{verbatim}

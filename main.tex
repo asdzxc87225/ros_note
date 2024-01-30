@@ -1,10 +1,23 @@
 % !TeX program = xelatex
 \documentclass{article}
+
 \usepackage{xeCJK}
 \usepackage{listings}
 \usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+
 \setCJKmainfont{Noto Sans Mono CJK TC} % 設定中文字體
 \setCJKmonofont{Noto Sans Mono CJK TC} % 設定等寬字體
+\geometry{a4paper, left=2cm, right=2cm, top=2cm, bottom=2cm}
+\hypersetup{
+    colorlinks=true,    % 将书签文字用颜色表示
+    linkcolor=blue,     % 内部链接的颜色
+    citecolor=green,    % 引用的颜色
+    filecolor=magenta,  % 文件链接的颜色
+    urlcolor=cyan       % URL的颜色
+}
+
 
 \title{ROS 筆記}
 \author{luu}
@@ -34,5 +47,15 @@
 \input{./part1/sections/launching.tex}
 \section{記錄和回放數據}
 \input{./part1/sections/bag.tex}
+
+\part{客戶端庫使用}
+客戶端函式庫是允許使用者實作 ROS 2 程式碼的 API。使用客戶端程式庫，使用者可以存取 ROS 2 概念，例如節點、主題、服務等。
+\section{colcon建立環境}
+\input{./part2/sections/colcon.tex}
+\section{工作目錄}
+\input{./part2/sections/workspace.tex}
+\section{編寫一個簡單的發布者和訂閱者 (Python)}
+\input{./part2/sections/publisher\_and\_subscriber.tex}
+
 
 \end{document}

@@ -1,0 +1,47 @@
+colcon是ros的建構工具。
+\subsection{安裝colcon}
+我們安專colcon記的往後對於會影響python的環境都要小心
+\begin{verbatim}
+sudo apt install python3-colcon-common-extensions
+\end{verbatim}
+
+\subsection{建立工作目錄}
+ROS工作空間是具有特定結構的目錄。通常有一個src子目錄。此子目錄內是 ROS 套件的源代碼所在的位置。通常目錄一開始是空的。
+
+\begin{verbatim}
+    mkdir -p ~/ros2_ws/src
+    cd ~/ros2_ws
+    ---------------------------
+    .
+    |- src
+
+    1 directory, 0 files
+\end{verbatim}
+\subsection{下載範例程式}
+從github下載程式到src目錄中。
+\begin{verbatim}
+    git clone https://github.com/ros2/examples \ 
+        src/examples -b humble
+\end{verbatim}
+\subsection{編譯}
+之後就可以編譯。
+\begin{verbatim}
+    colcon build
+    colcon test
+\end{verbatim}
+
+\subsection{環境啟動}
+編譯完成後就，就有運作環境可以使用。
+
+\begin{verbatim}
+    source install/setup.zsh
+\end{verbatim}
+\subsection{測試}
+\begin{verbatim}
+    ros2 run examples_rclcpp_minimal_subscriber \ 
+        subscriber_member_function
+
+    ros2 run examples_rclcpp_minimal_publisher \ 
+        publisher_member_function
+\end{verbatim}
+

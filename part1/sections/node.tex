@@ -1,0 +1,99 @@
+ROS 中的每個節點都應負責單一的模組化目的，例如控制車輪馬達或發布來自雷射測距儀的感測器資料。每個節點都可以透過主題、服務、操作或參數從其他節點發送和接收資料。
+
+完整的機器人系統由許多協同工作的節點組成。在 ROS 2 中，單一可執行檔（C++ 程式、Python 程式等）可以包含一個或多個節點。
+
+\subsection{ros2 直行方法}
+run 的使用方式如下
+\begin{verbatim}
+    ros2 run <package_name> <executable_name>
+    -------------------------------------------
+    usage: ros2 run [-h] [--prefix PREFIX]
+    package_name executable_name ...
+
+    Run a package specific executable
+
+    positional arguments:
+    package_name     Name of the ROS package
+    executable_name  Name of the executable
+    argv             Pass arbitrary arguments to the executable
+
+    options:
+    -h, --help       show this help message and exit
+    --prefix PREFIX  Prefix command, which should go before the
+    executable. Command must be wrapped in quotes
+    if it contains spaces (e.g. --prefix 'gdb -ex
+    run --args').
+\end{verbatim}
+操作流程如下
+\begin{enumerate}
+    \item 開啟第一個terminal
+    \item 開啟turtlesim turtlesim\_node
+    \item 開啟第二個terminal
+    \item 檢查節點裝況
+\end{enumerate}
+開啟模擬視窗
+\begin{verbatim}
+    ros2 run <package_name> <executable_name>
+    ros2 run turtlesim turtlesim_node
+\end{verbatim}
+
+檢查節點
+\begin{verbatim}
+    ros2 node list
+\end{verbatim}
+開啟控制器
+\begin{verbatim}
+    ros2 run turtlesim turtle_teleop_key
+\end{verbatim}
+\subsection{重新映射}
+重新映射可讓您將預設節點屬性（例如節點名稱、主題名稱、服務名稱等）重新指派給自訂值。
+\begin{verbatim}
+ros2 run turtlesim turtlesim_node --ros-args --remap \
+__node:=my_turtle
+\end{verbatim}
+這時後會看到我們映射的節點
+\begin{verbatim}
+    /my_turtle
+    /turtlesim
+    /teleop_turtle
+\end{verbatim}
+
+\subsection{節點訊息}
+    可以用info 來查詢節點的資料，方法如下。
+\begin{verbatim}
+ros2 node info <node_name>
+ros2 node info /my_turtle
+\end{verbatim}
+可以看到如下的連線資料
+\begin{enumerate}
+    \item  Subscribers:訂閱者
+    \item  Publishers:發布者
+    \item  Service Servers:服務伺服器
+    \item  Service Clients:服務客戶端
+    \item  Action Servers:動作伺服器
+    \item  Action Clients:動作客戶端
+\end{enumerate}
+\subsubsection{訂閱者（Subscribers）：}
+
+訂閱者是ROS中的一個元件，它可以接收特定主題（Topic）的訊息。
+主題是ROS中一種訊息傳遞機制，允許節點（ROS中的程式）透過發佈和訂閱訊息進行通訊。
+\subsubsection{發佈者（Publishers）：}
+
+發佈者是ROS中的一個元件，它能夠向特定主題發佈訊息。
+發佈者節點生成訊息並將其發送到相應的主題，使其他訂閱者節點能夠接收這些訊息。
+\subsubsection{服務伺服器（Service Servers）：}
+
+服務伺服器提供了一種不同的通訊機制，稱為服務（Service），允許節點提供某種特定的功能或服務。
+當一個節點請求服務時，服務伺服器執行相應的任務，並返回結果。
+\subsubsection{服務客戶端（Service Clients）：}
+
+服務客戶端是一個節點，它能夠向服務伺服器發送請求，並等待伺服器返回結果。
+這種通訊模式通常用於需要特定服務或功能的節點之間的交互。
+\subsubsection{動作伺服器（Action Servers）：}
+
+動作伺服器是ROS中處理長時間執行任務的一種機制。它允許異步執行，並提供反饋。
+與服務不同，動作可以週期性地提供反饋，而不僅僅是單一的請求和回應。
+\subsubsection{動作客戶端（Action Clients）：}
+
+動作客戶端是一個節點，它可以向動作伺服器發送請求，並接收反饋和結果。
+這通常用於需要處理較長時間執行的任務，而服務模型則適用於簡短的請求和回應。

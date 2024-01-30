@@ -1,0 +1,30 @@
+記錄關於某個主題發布的數據，以便您可以隨時重播和檢查它。
+
+\subsection{啟動節點}
+記的用不同的terminal啟動節點
+\begin{verbatim}
+    ros2 run turtlesim turtlesim_node
+    ros2 run turtlesim turtle_teleop_key
+\end{verbatim}
+我們也建立一個新目錄來儲檔
+
+\subsection{記入的方法}
+要注意topic的名稱要正確，可以用topic list來查詢。
+\begin{verbatim}
+    ros2 bag record <topic_name>
+    ros2 bag record /turtle1/cmd_vel
+\end{verbatim}
+
+檔案存的地方會是運行指令的地方這要注意
+
+\subsection{info}
+一樣我們可以用info來查詢錄的檔案。
+
+\begin{verbatim}
+    ros2 bag info <bag_file_name>
+\end{verbatim}
+\subsection{play}
+可以用play來重現錄製時做的動作。
+\begin{verbatim}
+    ros2 bag play <bag_file_name>
+\end{verbatim}

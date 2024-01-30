@@ -1,0 +1,88 @@
+動作是 ROS 2 中的通訊類型之一，適用於長時間運行的任務。
+
+它們由三部分組成：
+\begin{enumerate}
+    \item 目標
+    \item 回饋
+    \item 結果
+\end{enumerate}
+
+行動建立在 \textbf{主題}和\textbf{服務}的基礎上。它們的功能與服務類似，只是可以取消操作。它們還提供穩定的回饋，而不是返回單一回應的服務。
+
+\subsection{使用動作}
+操作過程如下
+\begin{enumerate}
+    \item 啟動兩個turtlesim節點
+    \item 使用turtle\_teleop\_key來控制烏龜
+    \item 觀察teleop\_turtle的資訊
+\end{enumerate}
+
+
+\subsubsection{開啟模擬}
+\begin{verbatim}
+    ros2 run turtlesim turtlesim_node
+    ros2 run turtlesim turtle_teleop_key
+\end{verbatim}
+\subsubsection{控制並觀察}
+根據提示去抄做烏龜的轉向。
+\begin{verbatim}
+    Use arrow keys to move the turtle.
+Use G|B|V|C|D|E|R|T keys to rotate to absolute orientations. 
+'F' to cancel a rotation.
+\end{verbatim}
+如果完成就會回傳動作完成
+\begin{verbatim}
+    [INFO] [turtlesim]: Rotation goal completed successfully
+\end{verbatim}
+當動作被中止也會有終止訊息
+\begin{verbatim}
+    [INFO] [turtlesim]: Rotation goal canceled
+\end{verbatim}
+過程中修改母標的提示
+\begin{verbatim}
+    [WARN] [turtlesim]: Rotation goal received before a 
+        previous goal finished. 
+        Aborting previous goal
+\end{verbatim}
+
+\subsection{list}
+我們可以用list來查詢action有哪些
+\begin{verbatim}
+    ros2 action list
+    ros2 action list -t
+\end{verbatim}
+
+\subsection{info}
+用info來查詢動作的訊息
+\begin{verbatim}
+    ros2 action info /turtle1/rotate_absolute
+    -----------------------------------------
+    Action: /turtle1/rotate_absolute
+    Action clients: 1
+        /teleop_turtle
+    Action servers: 1
+        /turtlesim
+\end{verbatim}
+
+\subsection{interface}
+使用interface show來查詢相關資料格式。
+\begin{verbatim}
+    ros2 interface show turtlesim/action/RotateAbsolute
+    ---------------------------------------------------
+# The desired heading in radians
+    float32 theta
+    ---
+# The angular displacement in radians to the starting position
+    float32 delta
+    ---
+# The remaining rotation in radians
+    float32 remaining
+\end{verbatim}
+
+\subsection{send\_goal}
+我們可以用send\_goal把目標傳道action。
+\begin{verbatim}
+    ros2 action send_goal <action_name> <action_type> <values>
+    ros2 action send_goal /turtle1/rotate_absolute \
+        turtlesim/action/RotateAbsolute "{theta: 1.57}"
+\end{verbatim}

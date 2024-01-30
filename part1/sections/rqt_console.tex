@@ -1,0 +1,41 @@
+rqt\_console是一個 GUI 工具，用於在 ROS 2 中內省日誌訊息。通常，日誌訊息會顯示在您的終端機中。使用rqt\_console，您可以隨著時間的推移收集這些訊息，以更有條理的方式仔細查看它們，過濾它們，保存它們，甚至重新加載保存的文件以在不同時間進行反思。
+
+
+\begin{enumerate}
+    \item 開啟rqt
+    \item 開啟節點
+    \item 控制烏龜
+    \item 查看或是存檔
+\end{enumerate}
+
+\subsection{開啟rqt}
+我們操作之前可以先開rqt，一邊做可以一邊檢查。
+\begin{verbatim}
+    ros2 run rqt_console rqt_console
+\end{verbatim}
+\subsection{開啟節點並動作}
+開啟節點後用另外一個terminal 來控制。
+\begin{verbatim}
+    ros2 topic pub -r 1 /turtle1/cmd_vel \ 
+        geometry_msgs/msg/Twist \ 
+        "{linear: {x: 2.0, y: 0.0, z: 0.0}, \ 
+        angular: {x: 0.0,y: 0.0,z: 0.0}}"
+\end{verbatim}
+
+\subsection{訊息級別}
+ROS 2 的記錄器等級依嚴重性排序：
+\begin{enumerate}
+    \item    Fatal:訊息表明系統將終止以嘗試保護自身免受損害。
+    \item    Error:訊息表明存在重大問題會阻止其正常運作。
+    \item  Warn:訊息顯示意外的活動或不理想的結果，可能代表更深層的問題。
+    \item  Info:訊息指示事件和狀態更新。    
+    \item Debug:息詳細說明了系統執行的整個逐步過程。
+\end{enumerate}
+
+\subsection{設定預設記錄器級別}
+您可以在首次使用重新映射運行節點時設定預設記錄器等級/turtlesim。在終端機中輸入以下命令：
+
+
+\begin{verbatim}
+    ros2 run turtlesim turtlesim_node --ros-args --log-level WARN
+\end{verbatim}

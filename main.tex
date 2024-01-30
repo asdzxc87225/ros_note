@@ -1,0 +1,38 @@
+% !TeX program = xelatex
+\documentclass{article}
+\usepackage{xeCJK}
+\usepackage{listings}
+\usepackage{graphicx}
+\setCJKmainfont{Noto Sans Mono CJK TC} % 設定中文字體
+\setCJKmonofont{Noto Sans Mono CJK TC} % 設定等寬字體
+
+\title{ROS 筆記}
+\author{luu}
+\date{} % 添加日期
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\part{CLI 操作}
+\section{CLI 設定}
+\input{./part1/sections/cli_settings.tex}
+\section{練習用的模擬器}
+\input{./part1/sections/simulator_practice.tex}
+\section{節點}
+\input{./part1/sections/node.tex}
+\section{主題}
+\input{./part1/sections/topic.tex}
+\section{參數}
+\input{./part1/sections/parameters.tex}
+\section{動作}
+\input{./part1/sections/action.tex}
+\section{rqt console查看日誌}
+\input{./part1/sections/rqt\_console.tex}
+\section{啟動節點}
+\input{./part1/sections/launching.tex}
+\section{記錄和回放數據}
+\input{./part1/sections/bag.tex}
+
+\end{document}

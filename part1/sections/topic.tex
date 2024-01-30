@@ -1,0 +1,94 @@
+\subsection{topic 用法}
+主題是在節點之間以及系統不同部分之間移動數據的主要方式之一。
+
+可以用-h來查詢topic可以有哪些操作如下。
+\begin{enumerate}
+\item  bw     :顯示主題使用的頻寬
+\item  delay  :從標題中的時間戳顯示主題的延遲
+\item  echo   :從主題輸出訊息
+\item  find   :輸出給定類型的可用主題列表
+\item  hz     :將平均發布平率列印到螢幕上
+\item  info   :列印主題的訊息
+\item  list   :輸出可用主題的列表
+\item  pub    :向主題發布訊息
+\item  type   :列印主題的類型
+\end{enumerate}
+
+\subsection{list}
+在新終端機中執行該命令將傳回系統中目前活動的所有主題的清單：
+ \begin{verbatim}
+     ros2 topic list 
+     ----------------
+     /parameter_events
+     /rosout
+     /turtle1/cmd_vel
+     /turtle1/color_sensor
+     /turtle1/pose
+\end{verbatim}
+
+\subsection{echo}
+若要查看某個主題上發布的數據，請使用：
+
+ \begin{verbatim}
+     ros2 topic echo <topic_name>
+     ros2 topic echo /turtle1/cmd_vel
+     ---------------------------------
+     linear:
+     x: 2.0
+     y: 0.0
+     z: 0.0
+     angular:
+     x: 0.0
+     y: 0.0
+     z: 0.0
+     ---
+\end{verbatim}
+\subsection{info}
+可以查詢主題的訂閱與發布資訊。
+\begin{verbatim}
+    ros2 topic info /turtle1/cmd_vel
+    --------------------------------
+    Type: geometry_msgs/msg/Twist
+    Publisher count: 1
+    Subscription count: 2
+\end{verbatim}
+
+\subsection{interface}
+節點使用訊息透過主題發送資料。發布者和訂閱者必須發送和接收相同類型的訊息才能進行通訊。
+
+我們可以透過info去查詢topic的tyep，在由interface show 來查詢格式。
+
+\newpage
+\begin{verbatim}
+    ros2 interface show geometry_msgs/msg/Twist
+    -------------------------------------------
+    # This expresses velocity in free space broken 
+    into its linear and angular parts.
+
+    Vector3  linear
+    float64 x
+    float64 y
+    float64 z
+    Vector3  angular
+    float64 x
+    float64 y
+    float64 z
+\end{verbatim}
+
+\subsection{pub}
+現在您已經有了訊息結構，
+用以下命令直接從命令列將資料發佈到主題：
+
+'<args>'是您將傳遞到主題的實際數據，採用您在上一節中剛剛發現的結構。
+
+
+\begin{verbatim}
+    ros2 topic pub <topic_name> <msg_type> '<args>'
+    ros2 topic pub --once /turtle1/cmd_vel \ 
+        geometry_msgs/msg/Twist \ 
+        "{linear: {x: 2.0, y: 0.0, z: 0.0},\ 
+        angular: {x: 0.0, y: 0.0, z: 1.8}}"
+\end{verbatim}
+
+以上我們我們了解如何查尋主題的發布的內容，與如何對主題輸入資料。
+

@@ -1,0 +1,31 @@
+使用命令列工具一次啟動多個節點。
+
+在大多數介紹性教學中，您一直在為運行的每個新節點開啟新終端。當您建立越來越複雜的系統並同時運行越來越多的節點時，打開終端機並重新輸入配置詳細資訊變得乏味。
+
+啟動檔案可讓您同時啟動和設定多個包含 ROS 2 節點的可執行檔。
+
+使用該命令運行單一啟動檔案將立即啟動整個系統 - 所有節點及其配置。ros2 launch
+
+\subsection{運行啟動文件}
+我們可以用multisim.launch.py來啟動。
+\begin{verbatim}
+    ros2 launch turtlesim multisim.launch.py
+\end{verbatim}
+
+\subsection{用list來查詢}
+
+我們可以用node list 與 topic list來查訊完整的名稱。
+
+之後我們就可以用pub 或其他的方式來給訊息。
+\begin{verbatim}
+    ros2 topic pub  /turtlesim1/turtle1/cmd_vel \ 
+        geometry_msgs/msg/Twist \ 
+        "{linear: {x: 2.0, y: 0.0, z: 0.0}, \ 
+        angular: {x: 0.0, y: 0.0, z: 1.8}}"
+
+    ros2 topic pub  /turtlesim2/turtle1/cmd_vel \ 
+        geometry_msgs/msg/Twist \ 
+        "{linear: {x: 2.0, y: 0.0, z: 0.0}, \ 
+        angular: {x: 0.0, y: 0.0, z: -1.8}}"
+\end{verbatim}
+

@@ -1,0 +1,10 @@
+% cli_settings.tex
+在運行ROS 2的指令時需要開啟環境，所以要先使用source來啟用。
+\begin{verbatim}
+source /opt/ros/humble/setup.zsh
+\end{verbatim}
+但是每次都要執行會有點多餘，所以可以寫在shell的設定檔內。
+\begin{verbatim}
+echo "source /opt/ros/humble/setup.zsh" >> ~/.zshrc
+\end{verbatim}
+

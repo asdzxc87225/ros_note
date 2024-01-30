@@ -1,0 +1,101 @@
+參數是節點的配置值。您可以將參數視為節點設定。
+節點可以將參數儲存為整數、浮點數、布林值、字串和列表。
+在ROS 2中，每個節點維護自己的參數。有關參數的更多背景信息，請參閱概念文件。
+
+\subsection{param 可以使用的指令}
+\begin{enumerate}
+\item     delete   :刪除參數
+\item  describe :顯示有關聲明參數的描述信息
+\item  dump     :以 YAML 檔案格式顯示節點的所有參數
+\item  get      :取得參數
+\item  list     :輸出可用參數列表
+\item  load     :載入節點的參數文件
+\item  set      :設定參數
+\end{enumerate}
+
+
+\subsection{list}
+可以用list來看不同節的參數
+\begin{verbatim}
+    ros2 param list
+    -------------------------
+    /teleop_turtle:
+        qos_overrides./parameter_events.publisher.depth
+        qos_overrides./parameter_events.publisher.durability
+        qos_overrides./parameter_events.publisher.history
+        qos_overrides./parameter_events.publisher.reliability
+        scale_angular
+        scale_linear
+    use_sim_time
+    /turtlesim:
+        background_b
+        background_g
+        background_r
+        qos_overrides./parameter_events.publisher.depth
+        qos_overrides./parameter_events.publisher.durability
+        qos_overrides./parameter_events.publisher.history
+        qos_overrides./parameter_events.publisher.reliability
+        use_sim_time
+\end{verbatim}
+
+\subsection{get}
+若要顯示參數的類型和目前值，請使用下列命令：
+
+<node\_name>與<parameter\_name>可以用list來查詢
+\begin{verbatim}
+    ros2 param get <node_name> <parameter_name>
+    ros2 param get /turtlesim background_g
+    ---------------------------------------
+    Integer value is: 86
+\end{verbatim}
+\subsection{set}
+我們也可以修改參數的數值
+\begin{verbatim}
+    ros2 param set <node_name> <parameter_name> <value>
+    ros2 param set /turtlesim background_r 150
+    ---------------------------------------
+    Set parameter successful
+\end{verbatim}
+\subsection{dump}
+您可以使用以下命令查看節點目前的所有參數值：
+
+\begin{verbatim}
+    ros2 param dump <node_name>
+    ros2 param dump /turtlesim > turtlesim.yaml
+    --------------------------------------------
+    /turtlesim:
+    ros__parameters:
+        background_b: 255
+        background_g: 86
+        background_r: 150
+        qos_overrides:
+        /parameter_events:
+            publisher:
+            depth: 1000
+            durability: volatile
+            history: keep_last
+            reliability: reliable
+        use_sim_time: false
+\end{verbatim}
+上面的範例有 > turtlesim.yaml，這樣會輸出檔案如果要看內容可以用cat。
+
+\subsection{load}
+您可以使用以下命令將參數從檔案載入到目前正在運行的節點：
+
+\begin{verbatim}
+    ros2 param load <node_name> <parameter_file>
+    ros2 param load /turtlesim turtlesim.yaml
+\end{verbatim}
+
+\subsection{使用時就加入參數}
+若要使用已儲存的參數值啟動相同節點，請使用：
+\begin{verbatim}
+    ros2 run <package_name> <executable_name>\ 
+        --ros-args --params-file <file_name>
+
+    ros2 run turtlesim turtlesim_node \ 
+        --ros-args --params-file turtlesim.yaml
+\end{verbatim}
+
+以上我們學會如何查詢參數與如何修改參數。
+

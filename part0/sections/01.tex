@@ -1,0 +1,71 @@
+
+\subsection{2-25 到 3-02}
+本週拿到jetson nano了。
+\begin{itemize}
+    \item jetson nano
+\end{itemize}
+\subsubsection{完成任務}
+本週住要將jection的作業環境搭建完成，只是nvidia提供的版本
+是，ubuntu18.04的版本這不是我們要的版本，所以提升到22.04
+但是應為套件的關西更新根升級的時間會花很久。
+\begin{itemize}
+    \item 安裝 jetpack4.6板
+    \item 將內部作業系統升級22.04
+    \item usb 與ssh通訊測試
+    \item 完成3D列硬的參數測試
+\end{itemize}
+\subsubsection{遇到的困難}
+jetson nano已經停產，所以nvidia沒有為nano做軟體的更新服務
+所以jetpack可以用的版本停在4.6板，再上去的版本沒有直接
+支援，但這部份只是光方沒寫支援實際我還沒測過，本次的作法
+是用jetpack4.6內的ubuntu18.04直接升級到22.04，目前還沒遇到
+兼容性問題。
+\begin{itemize}
+    \item nvidia 軟體支援差
+\end{itemize}
+
+\subsection{3-3 到 3-9}
+這周零件陸陸續續的收到了，現在手邊的東西有。
+
+\begin{itemize}
+    \item 光達
+    \item 馬達驅動器
+    \item jetson nano
+        n nano以今停產，
+    \item 不斷電系統
+    \item imu 
+    \item 航空電池
+    \item usb to ttl
+    \item 輪子
+\end{itemize}
+
+\subsubsection{完成任務}
+這周主要收到光達，以測試光達為主。
+
+\subsubsection{遇到的困難}
+剛開始的時候雖然官方有提供驅動，所以輕鬆的可以看到/scan
+的訊息，但是我在rviz2上只能在laser上看到訊號，在其他座標
+係就看不到了，這主要是我的tf觀念有問題要。
+
+\begin{itemize}
+    \item 注意tf id
+    \item 靜態廣播
+    \item urdf設定
+\end{itemize}
+\subsection{3-10 到 3-14}
+\begin{itemize}
+    \item if 樹設定
+    \item urdf模型設定
+\end{itemize}
+\subsection{3-15 到 3-21}
+\begin{itemize}
+    \item 光學雷達里程計 
+    \item slam 製圖
+\end{itemize}
+\subsection{3-22 到 3-28}
+\begin{itemize}
+    \item 確認馬達相關參數
+    \item ros2馬達控制節點
+    \item ros2馬達serial節點
+    \item ros2馬達里程節點
+\end{itemize}

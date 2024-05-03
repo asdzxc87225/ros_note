@@ -1,0 +1,229 @@
+SLAM Toolbox： 這是一個用於ROS 2的SLAM解決方案，用於構建
+機器人周圍環境的地圖並同時估計機器人的位置。SLAM Toolbox
+通常會生成一個地圖，描述了機器人周圍的環境，並用於
+後續的導航任務。
+
+
+\begin{tcolorbox}
+\begin{verbatim}
+ros2 pkg executables slam_toolbox
+----------------------------------
+slam_toolbox async_slam_toolbox_node
+slam_toolbox localization_slam_toolbox_node
+slam_toolbox map_and_localization_slam_toolbox_node
+slam_toolbox merge_maps_kinematic
+slam_toolbox sync_slam_toolbox_node
+\end{verbatim}
+\end{tcolorbox}
+\begin{enumerate}
+    \item async\_slam\_toolbox\_node： 非同步SLAM節點，用於接收激光雷達數據並建構地圖，同時估計機器人的位置。這個節點可以在SLAM過程中非同步地處理數據，提高了效率。
+    \item localization\_slam\_toolbox\_node： 定位節點，用於在已知地圖的情況下估計機器人的位置。這個節點通常用於在已經建立好地圖的環境中進行機器人定位。
+    \item map\_and\_localization\_slam\_toolbox\_node： 地圖和定位節點，結合了地圖建構和定位功能。這個節點可以同時建構地圖並估計機器人的位置，適用於需要即時定位和地圖更新的場景。
+    \item merge\_maps\_kinematic： 地圖合併工具，用於將多個地圖合併成一個更大的地圖。這個工具可以用於將不同時間或不同地點生成的地圖合併成一個整體地圖。
+    \item sync\_slam\_toolbox\_node： 同步SLAM節點，類似於非同步SLAM節點，用於接收激光雷達數據並建構地圖，但在處理數據時採用同步方式，可以更精確地估計機器人的位置。
+\end{enumerate}
+\subsection{slam toolbox節點訊息}
+async\_slam\_toolbox\_node只有一個節點slam toolbox，
+他的訊息如下
+
+\begin{itemize}
+    \item 訂閱者（Subscribers）：
+    \begin{itemize}
+        \item /map：接收地圖資料 (nav\_msgs/msg/OccupancyGrid)。
+        \item /parameter\_events：接收參數事件 (rcl\_interfaces/msg/ParameterEvent)。
+        \item /scan：接收雷射掃描資料 (sensor\_msgs/msg/LaserScan)。
+        \item /slam\_toolbox/feedback：接收互動標記反饋 \\
+            (visualization\_msgs/msg/InteractiveMarkerFeedback)。
+    \end{itemize}
+    \item 發布者（Publishers）：
+    \begin{itemize}
+        \item /map：發布地圖資料 (nav\_msgs/msg/OccupancyGrid)。
+        \item /map\_metadata：發布地圖的元資料 (nav\_msgs/msg/MapMetaData)。
+        \item /parameter\_events：發布參數事件 (rcl\_interfaces/msg/ParameterEvent)。
+        \item /pose：發布具有協方差的姿態資訊 (geometry\_msgs/msg/PoseWithCovarianceStamped)。
+        \item /rosout：用於 ROS 輸出 \\
+            (rcl\_interfaces/msg/Log)。
+        \item /slam\_toolbox/graph\_visualization：發布圖形可視化資料\\
+            (visualization\_msgs/msg/MarkerArray)。
+        \item /slam\_toolbox/scan\_visualization：發布雷射掃描資料的可視化 (sensor\_msgs/msg/LaserScan)。
+        \item /slam\_toolbox/update：用於更新互動標記的訊息 
+            \\(visualization\_msgs/msg/InteractiveMarkerUpdate)。
+        \item /tf：發布 TF 訊息 (tf2\_msgs/msg/TFMessage)。
+    \end{itemize}
+    \item 服務伺服器（Service Servers）：
+    \begin{itemize}
+        \item /slam\_toolbox/clear\_changes：用於清除變更的服務 \\
+            (slam\_toolbox/srv/Clear)。
+        \item /slam\_toolbox/describe\_parameters：用於描述參數的服務 
+            \\(rcl\_interfaces/srv/DescribeParameters)。
+        \item /slam\_toolbox/deserialize\_map：用於反序列化地圖的服務 
+            \\(slam\_toolbox/srv/DeserializePoseGraph)。
+        \item /slam\_toolbox/dynamic\_map：用於獲取動態地圖的服務 
+            \\(nav\_msgs/srv/GetMap)。
+        \item /slam\_toolbox/get\_interactive\_markers：用於獲取互動標記的服務 
+            \\(visualization\_msgs/srv/GetInteractiveMarkers)。
+        \item /slam\_toolbox/get\_parameter\_types：用於獲取參數類型的服務 
+            \\(rcl\_interfaces/srv/GetParameterTypes)。
+        \item /slam\_toolbox/get\_parameters：用於獲取參數的服務 
+            \\(rcl\_interfaces/srv/GetParameters)。
+        \item /slam\_toolbox/list\_parameters：用於列出參數的服務 
+            \\(rcl\_interfaces/srv/ListParameters)。
+        \item /slam\_toolbox/manual\_loop\_closure：用於手動閉環的服務 
+            \\(slam\_toolbox/srv/LoopClosure)。
+        \item /slam\_toolbox/pause\_new\_measurements：用於暫停新測量的服務 (slam\_toolbox/srv/Pause)。
+        \item /slam\_toolbox/save\_map：用於保存地圖的服務 (slam\_toolbox/srv/SaveMap)。
+        \item /slam\_toolbox/serialize\_map：用於序列化地圖的服務 (slam\_toolbox/srv/SerializePoseGraph)。
+        \item /slam\_toolbox/set\_parameters：用於設置參數的服務 (rcl\_interfaces/srv/SetParameters)。
+        \item /slam\_toolbox/set\_parameters\_atomically：用於原子設置參數的服務 
+            \\(rcl\_interfaces/srv/SetParametersAtomically)。
+        \item /slam\_toolbox/toggle\_interactive\_mode：用於切換互動模式的服務 
+            \\(slam\_toolbox/srv/ToggleInteractive)。
+    \end{itemize}
+\end{itemize}
+提供一系列服務，包括清除變化、描述參數、反序列化地圖、獲取動態地圖、獲取互動式標記等。
+
+\subsubsection{topic節點}
+上面的節點就可以看得出來他的topic很多。
+
+\begin{itemize}
+    \item /joint\_states： 發布機器人各個關節的狀態，包括位置、速度等信息，通常由機器人的控制器發布。
+    \item /map： SLAM（同步定位與地圖構建）算法生成的地圖，通常是一個佔用格地圖（Occupancy Grid Map），描述了機器人周圍的環境。
+    \item /map\_metadata： 地圖的元數據，包含了地圖的尺寸、分辨率等信息。
+    \item /parameter\_events： 發布參數的變更事件，用於通知參數發生了變化。
+    \item /pose： 發布機器人的姿態信息，包括位置和方向。
+    \item /robot\_description： 包含了機器人的URDF（Unified Robot Description Format）描述，用於描述機器人的結構和幾何形狀。
+    \item /rosout： ROS系統的輸出信息，包括日誌和調試信息。
+    \item /scan： 激光雷達的掃描數據，用於感測機器人周圍的障礙物。
+    \item /slam\_toolbox/feedback： 互動標記的反饋信息，用於顯示和操作地圖上的互動標記。
+    \item /slam\_toolbox/graph\_visualization： 圖形可視化數據，用於在地圖上顯示標記或軌跡等信息。
+    \item /slam\_toolbox/scan\_visualization： 激光雷達數據的可視化，用於在RViz等工具中顯示激光雷達掃描。
+    \item /slam\_toolbox/update： 更新互動標記的消息，用於更新地圖上的互動標記。
+    \item /tf： 用於傳遞坐標變換信息，描述了不同坐標系之間的關係。
+    \item /tf\_static： 用於傳遞靜態的坐標變換信息，這些變換在運行時不會改變。
+\end{itemize}
+
+\subsubsection{參數}
+
+\begin{itemize}
+    \item angle\_variance\_penalty: 角度變異懲罰。
+
+    \item base\_frame: 機器人的基礎座標系。
+
+    \item ceres\_dogleg\_type: Ceres解算器的Dogleg類型。
+
+    \item ceres\_linear\_solver: Ceres解算器的線性求解器。
+
+    \item ceres\_loss\_function: Ceres解算器的損失函數。
+
+    \item ceres\_preconditioner: Ceres解算器的預處理器。
+
+    \item ceres\_trust\_strategy: Ceres解算器的信任策略。
+
+    \item coarse\_angle\_resolution: 粗糙角度解析度。
+
+    \item coarse\_search\_angle\_offset: 粗糙搜索角度偏移量。
+
+    \item correlation\_search\_space\_dimension: 相關性搜索空間維度。
+
+    \item correlation\_search\_space\_resolution: 相關性搜索空間解析度。
+
+    \item correlation\_search\_space\_smear\_deviation: 相關性搜索空間模糊偏差。
+
+    \item debug\_logging: 調試日誌記錄。
+
+    \item distance\_variance\_penalty: 距離方差懲罰。
+
+    \item do\_loop\_closing: 是否執行循環閉合。
+
+    \item enable\_interactive\_mode: 是否啟用互動模式。
+
+    \item fine\_search\_angle\_offset: 精細搜索角度偏移量。
+
+    \item interactive\_mode: 互動模式。
+
+    \item link\_match\_minimum\_response\_fine: 連接匹配最小響應（細）。
+
+    \item link\_scan\_maximum\_distance: 連接掃描最大距離。
+
+    \item loop\_match\_maximum\_variance\_coarse: 循環匹配最大方差（粗）。
+
+    \item loop\_match\_minimum\_chain\_size: 循環匹配最小鏈尺寸。
+
+    \item loop\_match\_minimum\_response\_coarse: 循環匹配最小響應（粗）。
+
+    \item loop\_match\_minimum\_response\_fine: 循環匹配最小響應（細）。
+
+    \item loop\_search\_maximum\_distance: 循環搜索最大距離。
+
+    \item loop\_search\_space\_dimension: 循環搜索空間維度。
+
+    \item loop\_search\_space\_resolution: 循環搜索空間解析度。
+
+    \item loop\_search\_space\_smear\_deviation: 循環搜索空間模糊偏差。
+
+    \item map\_file\_name: 地圖檔案名稱。
+
+    \item map\_frame: 地圖座標系。
+
+    \item map\_name: 地圖名稱。
+
+    \item map\_start\_at\_dock: 地圖是否從碼頭開始。
+
+    \item map\_start\_pose: 地圖的起始姿態。
+
+    \item map\_update\_interval: 地圖更新間隔。
+
+    \item minimum\_angle\_penalty: 最小角度懲罰。
+
+    \item minimum\_distance\_penalty: 最小距離懲罰。
+
+    \item minimum\_time\_interval: 最小時間間隔。
+
+    \item minimum\_travel\_distance: 最小行駛距離。
+
+    \item minimum\_travel\_heading: 最小行駛方向。
+
+    \item mode: 模式（地圖構建或定位）。
+
+    \item odom\_frame: 里程計座標系。
+
+    \item paused\_new\_measurements: 暫停新測量。
+
+    \item paused\_processing: 暫停處理。
+
+    \item position\_covariance\_scale: 位置協方差比例。
+
+    \item qos\_overrides: QoS覆蓋。
+
+    \item resolution: 解析度。
+
+    \item scan\_buffer\_maximum\_scan\_distance: 掃描緩衝區最大掃描距離。
+
+    \item scan\_buffer\_size: 掃描緩衝區大小。
+
+    \item scan\_queue\_size: 掃描隊列大小。
+
+    \item scan\_topic: 掃描主題。
+
+    \item solver\_plugin: 解算器插件。
+
+    \item tf\_buffer\_duration: TF緩衝區持續時間。
+
+    \item throttle\_scans: 掃描節流。
+
+    \item transform\_publish\_period: 變換發布週期。
+
+    \item transform\_timeout: 變換超時。
+
+    \item use\_map\_saver: 是否使用地圖保存器。
+
+    \item use\_response\_expansion: 是否使用響應擴展。
+
+    \item use\_scan\_barycenter: 是否使用掃描重心。
+
+    \item use\_scan\_matching: 是否使用掃描匹配。
+
+    \item use\_sim\_time: 是否使用模擬時間。
+
+    \item yaw\_covariance\_scale: 偏航協方差比例。
+\end{itemize}

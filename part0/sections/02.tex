@@ -1,0 +1,41 @@
+\subsection{401到407}
+輪組的材料檢查
+\begin{itemize}
+    \item 確認接線方法
+    \item 設計個模組間的接線
+\end{itemize}
+\subsection{408到414}
+完成了輪子編碼器設定，馬達的轉速測量
+\begin{itemize}
+    \item 完成輪組控制電路
+    \item 測量控制訊號
+    \item 測量霍爾編碼器訊號
+\end{itemize}
+\subsection{415到421}
+本週期中考基本上沒有進度，主裝材料改成用材料行的盒子。
+\begin{itemize}
+    \item 完成pid調整
+    \item 完成輪組控制鐵三角(目標、控制、里程)
+    \item 3d列硬大失敗
+    \item 修改外觀材料
+\end{itemize}
+\subsection{422到428}
+以完成基本的框架，現在可以進行基本的控制slam與導航。
+\begin{itemize}
+    \item 車子的前後左右的控制
+    \item 光達的slam製圖
+    \item nav2導航
+\end{itemize}
+
+\subsubsection{問題}
+還是jetson的兼容問題，主要是官方沒有提供22.04的版本所以我們從官方提供的最新18.04進行
+升級，但是還是有某些軟體不會跟著所以再把我筆點的程式與ros2的套件轉移到jetson nano來
+運作時就時常會有軟體相依性的問題。
+
+再來可能是官方已經擺爛了所以20.04或是往後感覺他的驅動都可能會有問題，這次arduino nano
+在根jetson nano 做uart的通訊時，也出現亂碼很明縣就是有大量的雜訊干擾雖然反覆的交叉
+比對之後最後有把通訊問題排除。
+
+usb wifi 非常不穩定，我在用ssh登入jetson時很卡並且運算上感覺不是很好。
+
+

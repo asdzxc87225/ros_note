@@ -1,0 +1,14 @@
+這個 launch 文件配置了一個機器人系統，包括了以下功能：
+
+\begin{itemize}
+    \item robot\_params 節點用於發佈機器人的參數。
+    \item mtr\_encdr 節點用於發佈輪子編碼器的信息。
+    \item ros\_imu\_bno055\_node 節點用於處理 IMU 數據，提供了一系列參數用於配置 IMU。
+    \item rplidarNode 節點用於控制 RPLidar 激光雷達，提供了一系列參數用於配置激光雷達。
+    \item tf\_base\_link\_imu 和 tf\_base\_link\_laser 節點用於發佈靜態坐標變換關係，將 base\_link 與 imu\_link、laser 坐標系連接起來。
+    \item odometer 節點用於發佈里程計信息。
+    \item robot\_pose\_ekf 節點用於執行擴展卡爾曼濾波器，整合里程計、IMU 和視覺里程計等信息，提供機器人的位姿信息。
+    \item rplidar\_motor\_control 節點用於自動控制 RPLidar 激光雷達的馬達，當不需要時自動關閉。
+\end{itemize}
+
+這個 launch 文件整合了機器人系統中的多個功能節點，使得機器人能夠正常運行並提供所需的信息。

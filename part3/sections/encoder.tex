@@ -1,0 +1,540 @@
+這部份作者寫了三個文件分別如下。
+\begin{enumerate}
+    \item rotary\_encoder.py 編碼器計算
+    \item motor\_calibrator.py 校準馬達的參數
+    \item encoder\_publisher.py 控制與發訊息
+\end{enumerate}
+
+\subsection{rotary\_encoder.py程式分析 }
+這部份作者寫了轉向的判斷。
+\subsubsection{Decoder物件建構}
+開頭的地方可以看到用到了pigpio，這個是一個數梅派的gpio套件有了
+這個就可以使用gpio接腳。
+
+首先是class的－init的建構內容可以看到會數入下面幾個參數。
+\begin{enumerate}
+    \item pi：用於控制GPIO的pigpio對象。
+    \item gpioA和gpioB：要監聽的兩個GPIO腳。
+    \item callback：當GPIO腳狀態變化時調用的回調函數。
+\end{enumerate}
+之後設定初始的數值。
+\begin{enumerate}
+    \item levA和levB：記錄兩個GPIO腳的狀態（0或1）。
+    \item lastGpio：上一次觸發回調函數的GPIO腳。
+    \item pi.set\_mode：設置GPIO腳的模式為輸入。
+    \item pi.set\_pull\_up\_down：設置GPIO腳的上拉/下拉電阻。
+    \item pi.callback：設置GPIO腳的回調函數，當腳的電平變化時調用 \_pulse 方法。
+\end{enumerate}
+
+\begin{lstlisting}[language=Python, caption=開頭建立編碼器]
+import pigpio
+class Decoder:
+   """Class to decode mechanical rotary encoder pulses."""
+   def __init__(self, pi, gpioA, gpioB, callback):
+      self.pi = pi
+      self.gpioA = gpioA
+      self.gpioB = gpioB
+      self.callback = callback
+      self.levA = 0
+      self.levB = 0
+      self.lastGpio = None
+      self.pi.set_mode(gpioA, pigpio.INPUT)
+      self.pi.set_mode(gpioB, pigpio.INPUT)
+      self.pi.set_pull_up_down(gpioA, pigpio.PUD_UP)
+      self.pi.set_pull_up_down(gpioB, pigpio.PUD_UP)
+      self.cbA = self.pi.callback(gpioA, pigpio.EITHER_EDGE, self._pulse)
+      self.cbB = self.pi.callback(gpioB, pigpio.EITHER_EDGE, self._pulse)
+\end{lstlisting}
+
+\subsubsection{轉向監測}
+這個方法 \_pulse 是用來解碼旋轉編碼器的脈衝信號的。
+旋轉編碼器通過兩個GPIO腳（A和B）發送脈衝信號，這些脈
+衝信號會根據旋轉方向和速度變化。
+
+輸入的變數如下。
+\begin{enumerate}
+    \item gpio 是觸發回調的 GPIO 腳的編號。
+    \item level 是該 GPIO 腳的電平狀態，可以是 0 或 1。
+    \item tick 是回調被觸發時的時間戳記，用來測量時間間隔或其他時間相關的操作。
+\end{enumerate}
+
+在地一個if是要函數中觸發的 GPIO 腳的編號來更新對應的狀態變數，
+再來的會是一個兩層的if結構，第一層if就是用於去除抖動也就是同
+一個電位多次觸發的狀況，再來一層就是判斷正反轉
+(正轉self.callback(1))。
+\begin{lstlisting}[language=Python, caption=\_pulse方法]
+   def _pulse(self, gpio, level, tick):
+      """
+      Decode the rotary encoder pulse.
+
+                   +---------+         +---------+      0
+                   |         |         |         |
+         A         |         |         |         |
+                   |         |         |         |
+         +---------+         +---------+         +----- 1
+
+             +---------+         +---------+            0
+             |         |         |         |
+         B   |         |         |         |
+             |         |         |         |
+         ----+         +---------+         +---------+  1
+      """
+      if gpio == self.gpioA:
+         self.levA = level
+      else:
+         self.levB = level;
+
+      if gpio != self.lastGpio: # debounce
+         self.lastGpio = gpio
+         if   gpio == self.gpioA and level == 1:
+            if self.levB == 1:
+               self.callback(1)
+         elif gpio == self.gpioB and level == 1:
+            if self.levA == 1:
+               self.callback(-1)
+\end{lstlisting}
+\subsubsection{關閉gpio}
+這段程式碼是用來取消旋轉編碼器的解碼器。在這個方法中，
+它取消了對 GPIO 腳的監聽，從而停止解碼器的操作。通常
+在不再需要監聽旋轉編碼器的脈衝信號時調用這個方法，以節
+省資源和確保正確的操作。
+
+\begin{lstlisting}[language=Python, caption=取消監控]
+   def cancel(self):
+      """
+      Cancel the rotary encoder decoder.
+      """
+      self.cbA.cancel()
+      self.cbB.cancel()
+
+\end{lstlisting}
+
+\subsubsection{測試程式}
+\begin{lstlisting}[language=Python, caption=測試腳本]
+if __name__ == "__main__":
+   import time
+   import pigpio
+   import rotary_encoder
+   pos = 0
+   def callback(way):
+      global pos
+      pos += way
+      print("pos={}".format(pos))
+   pi = pigpio.pi()
+   decoder = rotary_encoder.Decoder(pi, 7, 8, callback)
+   time.sleep(300)
+   decoder.cancel()
+   pi.stop()
+\end{lstlisting}
+
+\subsection{motor\_calibrator.py分析}
+\subsubsection{引用的函數}
+\begin{enumerate}
+    \item rospy:用於與 ROS 系統通信。
+    \item pigpio:控制 Raspberry Pi 的 GPIO。
+    \item rotary\_encoder.Decoder:監控選轉方向
+\end{enumerate}
+\begin{lstlisting}[language=Python, caption=引用函數庫]
+import rospy
+import pigpio
+from rotary\_encoder import Decoder
+\end{lstlisting}
+
+\subsubsection{變數宣告}
+下表\ref{tab:example9.2.1}是每個參數所代表的意義，基本上
+事先定義馬達控制gpio，包含驅動訊號與霍爾傳感器的訊號，之後
+之後是設定馬達的狀態。
+
+\begin{lstlisting}[language=Python, caption=變數宣告]
+datafile = '/home/ubuntu/catkin_ws/src/my_robot/wheels/data/tr_spd.csv'
+DWELL = 4  # seconds to dwell at each speed
+
+# Set up gpio (Broadcom) pin aliases
+left_mtr_spd_pin = 17
+left_mtr_in1_pin = 27
+left_mtr_in2_pin = 22
+
+right_mtr_spd_pin = 11
+right_mtr_in1_pin = 10
+right_mtr_in2_pin = 9
+
+left_enc_A_pin = 7
+left_enc_B_pin = 8
+
+right_enc_A_pin = 23
+right_enc_B_pin = 24
+
+L_mode = 'OFF'  # motor mode: 'FWD', 'REV', 'OFF'
+R_mode = 'OFF'
+\end{lstlisting}
+\begin{table}[ht]
+\centering
+\caption{變數表}
+\label{tab:example9.2.1}
+\begin{tabular}{|l|p{0.6\linewidth}|}
+\hline
+\textbf{變數名稱} & \textbf{功能描述} \\
+\hline
+datafile & 存儲速度數據的文件路徑，可能是一個 CSV 文件。 \\
+\hline
+DWELL & 每個速度設定停留的時間（秒數）。 \\
+\hline
+left\_mtr\_spd\_pin & 左馬達的速度控制引腳。 \\
+\hline
+left\_mtr\_in1\_pin & 左馬達的方向控制引腳（1）。 \\
+\hline
+left\_mtr\_in2\_pin & 左馬達的方向控制引腳（2）。 \\
+\hline
+right\_mtr\_spd\_pin & 右馬達的速度控制引腳。 \\
+\hline
+right\_mtr\_in1\_pin & 右馬達的方向控制引腳（1）。 \\
+\hline
+right\_mtr\_in2\_pin & 右馬達的方向控制引腳（2）。 \\
+\hline
+left\_enc\_A\_pin & 左編碼器的引腳 A。 \\
+\hline
+left\_enc\_B\_pin & 左編碼器的引腳 B。 \\
+\hline
+right\_enc\_A\_pin & 右編碼器的引腳 A。 \\
+\hline
+right\_enc\_B\_pin & 右編碼器的引腳 B。 \\
+\hline
+L\_mode & 左馬達的工作模式，可能是 'FWD'（前進）、'REV'（後退）或 'OFF'（停止）。 \\
+\hline
+R\_mode & 右馬達的工作模式，可能是 'FWD'（前進）、'REV'（後退）或 'OFF'（停止）。 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{轉向控制}
+這段程式碼定義了一個名為 set\_mtr\_spd 的函數，用於驅動馬達使用 PWM 信號。它根據傳入的參數設置左右兩側馬達的速度和方向。
+
+輸入到函數的變數有下面幾個
+\begin{enumerate}
+    \item pi：pigpio 的實例，用於控制 GPIO。
+    \item L\_PWM\_val：左馬達的 PWM 值，用於控制馬達的速度。
+    \item R\_PWM\_val：右馬達的 PWM 值，同樣用於控制馬達的速度。
+    \item L\_mode：左馬達的工作模式，可能是 'FWD'（前進）、'REV'（後退）或 'OFF'（停止）。
+    \item R\_mode：右馬達的工作模式，同樣可能是 'FWD'、'REV' 或 'OFF'。
+\end{enumerate}
+
+轉向的部份也會應為馬達的種類與接線影響，請確認接線方式與規範。
+
+\begin{lstlisting}[language=Python, caption=馬達動作定義]
+def set_mtr_spd(pi, L_PWM_val, R_PWM_val, L_mode, R_mode):
+    """Drive motors using a PWM signal."""
+
+    # Set motor direction pins appropriately
+    if L_mode == 'FWD':
+        pi.write(left_mtr_in1_pin, 0)
+        pi.write(left_mtr_in2_pin, 1)
+    elif L_mode == 'REV':
+        pi.write(left_mtr_in1_pin, 1)
+        pi.write(left_mtr_in2_pin, 0)
+    else:  # Parked
+        pi.write(left_mtr_in1_pin, 0)
+        pi.write(left_mtr_in2_pin, 0)
+
+    if R_mode == 'FWD':
+        pi.write(right_mtr_in1_pin, 0)
+        pi.write(right_mtr_in2_pin, 1)
+    elif R_mode == 'REV':
+        pi.write(right_mtr_in1_pin, 1)
+        pi.write(right_mtr_in2_pin, 0)
+    else:  # Parked
+        pi.write(right_mtr_in1_pin, 0)
+        pi.write(right_mtr_in2_pin, 0)
+
+    # Send PWM values to the motors
+    pi.set_PWM_dutycycle(left_mtr_spd_pin, L_PWM_val)
+    pi.set_PWM_dutycycle(right_mtr_spd_pin, R_PWM_val)
+
+left_pos = 0
+\end{lstlisting}
+
+\subsubsection{轉向紀錄}
+這段程式碼定義了一個回調函數 left\_enc\_callback，用於處理
+左編碼器的脈衝信號。每當編碼器產生一個脈衝時，該回調函數會
+被調用，並將 left\_pos 變數的值根據脈衝的方向（+1 或 -1）
+進行增加或減少。
+\begin{enumerate}
+    \item left\_pos：用於追蹤左編碼器的位置或旋轉角度的變數，初始值為 0。
+    \item tick：表示一個脈衝的方向，可能是 +1（正方向）或 -1（負方向）。
+\end{enumerate}
+\begin{lstlisting}[language=Python, caption=轉向記錄]
+   left_pos = 0
+def left_enc_callback(tick):
+    """Add 1 tick (either +1 or -1)"""
+    
+    global left_pos
+    left_pos += tick 
+\end{lstlisting}
+
+\subsection{motor\_calibrator主循環}
+這段程式碼是一個主要的控制循環，用於驅動機器人以不同的速度前進並收集旋轉編碼器的數據。讓我們來分析一下：
+
+\subsubsection{初始化參數}
+這段程式碼的目的是初始化並設置機器人的控制參數，準備進行速度控制和數據收集。
+\begin{enumerate}
+    \item pigpio.pi() 建立了一個 pigpio 實例 pi 
+    \item  Decoder 類建立了兩個編碼器解碼器
+    \item  ROS 節點，並設置了初始值
+    \item 使用 set\_mtr\_spd(pi, 0, 0, L\_mode, R\_mode) 將左右馬達的速度設置為 0，以確保機器人起始時停止運動。
+    \item 速度列表 speeds，包含從 240 到 60間隔為 -20 
+\end{enumerate}
+\begin{lstlisting}[language=Python, caption=初始化]
+    pi = pigpio.pi()
+    left_decoder = Decoder(pi, left_enc_A_pin, left_enc_B_pin,\ 
+        left_enc_callback)
+    right_decoder = Decoder(pi, right_enc_A_pin, \ 
+        right_enc_B_pin, right_enc_callback)
+
+    # Set up initial values
+    rospy.init_node('wheels', anonymous=True)
+    rate = rospy.Rate(10)
+    prev_left_pos = 0
+    prev_right_pos = 0
+    set_mtr_spd(pi, 0, 0, L_mode, R_mode)
+    speeds = range(240, 60, -20)  # list of speeds at which to drive
+    data = ["Lft_TR, Rgt_TR, Avg_TR, spd\n",]  # Header
+
+\end{lstlisting}
+
+\subsubsection{while轉速計算}
+這邊真的很長，主要是由一個for迴圈包著一個while回圈，
+for迴圈跑得是速度，while迴圈就是根據數度去測量轉創況
+
+for開始的就是設定向前轉，之後在歸零計時器這樣做的目的
+是為了在後續的迴圈中計算每次迭代所花費的時間，以便控
+制機器人以設定的速度行駛一段時間後，收集左右輪的實際
+速度數據。
+
+
+\begin{lstlisting}[language=Python, caption=whil之前的準備]
+    for spd in speeds:
+        # set direction
+        L_mode = 'FWD'
+        R_mode = 'FWD'
+        prev_time = rospy.Time.now().to_sec()
+        start_time = prev_time
+        delta_time = 0.0
+\end{lstlisting}
+接下來的是whil的速度運算
+\begin{itemize}
+    \item 左輪位置變化量${delta\_left\_pos} = {left\_pos} - {prev\_left\_pos}$
+    \item 右輪位置變化量${delta\_right\_pos} = {right\_pos} - {prev\_right\_pos}$
+    \item 時間間隔${delta\_time} = {curr\_time} - {prev\_time}$
+    \item 左輪實際速度${L\_atr} = \frac{{delta\_left\_pos}}{{delta\_time}}$
+    \item 右輪實際速度${R\_atr} = \frac{{delta\_right\_pos}}{{delta\_time}}$
+\end{itemize}
+\begin{lstlisting}[language=Python, caption=轉速運算]
+while True:
+        # Calculate actual tick rate for left & right wheels
+        delta_left_pos = left_pos - prev_left_pos
+        delta_right_pos = right_pos - prev_right_pos
+        prev_left_pos = left_pos
+        prev_right_pos = right_pos
+        curr_time = rospy.Time.now().to_sec()
+        delta_time = curr_time - prev_time
+        prev_time = curr_time
+        L_atr = delta_left_pos / delta_time
+        R_atr = delta_right_pos / delta_time
+\end{lstlisting}
+
+\subsubsection{while紀錄轉速}
+ DWELL 的八分之一，則會清空左右輪的速度列表，以便穩定速度。
+ 否則，將實際速度值添加到左右輪的速度列表中，以進行後續數據
+ 收集。
+
+這段程式碼的作用是確保在開始收集數據之前，機器人的速度已經
+穩定下來，以確保收集到的數據準確性。
+\begin{lstlisting}[language=Python, caption=紀錄轉速]
+    if curr_time - start_time < DWELL/8:
+        L_atr_list = []
+        R_atr_list = []
+
+    # Collect data
+    else:
+        L_atr_list.append(L_atr)
+        R_atr_list.append(R_atr)
+\end{lstlisting}
+\subsubsection{while結束處理}
+結束時候就會計算單邊平均，與兩邊平均之後結束了。
+\begin{lstlisting}[language=Python, caption=紀錄轉速]
+    if curr_time - start_time > DWELL:
+        print(f"Done with spd={spd}")
+        # find average values of L_atr and R_atr
+        L_avg = sum(L_atr_list)/len(L_atr_list)
+        R_avg = sum(R_atr_list)/len(R_atr_list)
+        combined = (L_avg + R_avg)/2
+        data.append(f"{L_avg:.2f}, {R_avg:.2f},{combined:.2f}, {spd}\n")
+        break
+\end{lstlisting}
+
+\subsubsection{輸出到csv檔}
+結束所有測量之後就會輸出到外頭的csv文件中。
+\begin{lstlisting}[language=Python, caption=紀錄資料]
+  print("Finished LOOP")
+    with open(datafile, 'w') as f:
+        for line in data:
+            f.write(line)
+\end{lstlisting}
+
+
+\subsubsection{結束處理}
+這裡就是將馬達停下，之後關閉gpio的接點。
+\begin{lstlisting}[language=Python, caption=紀錄資料]
+    set_mtr_spd(pi, 0, 0, 'OFF', 'OFF')
+    # Clean up & exit
+    print("\nExiting")
+    left_decoder.cancel()
+    right_decoder.cancel()
+    pi.set_servo_pulsewidth(left_mtr_spd_pin, 0)
+    pi.set_servo_pulsewidth(right_mtr_spd_pin, 0)
+    pi.stop()
+\end{lstlisting}
+
+\subsection{encoder\_publisher}
+程式那容大致分成下面幾個部份。
+\begin{itemize}
+    \item 引入函數庫
+    \item 設定變數
+    \item listener()監聽主題
+    \item listener\_callback(msg):回傳線性x與角度z
+    \item 將 cmd vels 轉換為目標刻度率
+    \item 計算速度
+    \item 設定轉速
+    \item 紀錄旋轉量
+    \item 主循環
+\end{itemize}
+
+\subsubsection{函數庫}
+
+\begin{itemize}
+    \item rospy：ros的客戶端通訊程式庫
+    \item geometry\_msgs.msg:幾何學的資料界面
+    \item std\_msgs.msg:資料型態庫
+    \item pigpio:gpio控制庫
+    \item rotary\_encoder:編碼器的訊號
+\end{itemize}
+
+\subsubsection{參數設定}
+用到的參數如下表\ref{tab:variables}
+\begin{table}[ht]
+\centering
+\caption{變數說明}
+\label{tab:variables}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{變數}            & \textbf{說明}                                                \\ \hline
+MTR\_DEBUG       & 啟用/停用打印 mtr pwm 值的開關                                \\ \hline
+left\_mtr\_spd\_pin & 左馬達速度控制的 GPIO 腳位                                   \\ \hline
+left\_mtr\_in1\_pin & 左馬達控制輸入1的 GPIO 腳位                                 \\ \hline
+left\_mtr\_in2\_pin & 左馬達控制輸入2的 GPIO 腳位                                 \\ \hline
+right\_mtr\_spd\_pin & 右馬達速度控制的 GPIO 腳位                                  \\ \hline
+right\_mtr\_in1\_pin & 右馬達控制輸入1的 GPIO 腳位                                 \\ \hline
+right\_mtr\_in2\_pin & 右馬達控制輸入2的 GPIO 腳位                                 \\ \hline
+left\_enc\_A\_pin  & 左編碼器 A 相的 GPIO 腳位                                     \\ \hline
+left\_enc\_B\_pin  & 左編碼器 B 相的 GPIO 腳位                                     \\ \hline
+right\_enc\_A\_pin & 右編碼器 A 相的 GPIO 腳位                                     \\ \hline
+right\_enc\_B\_pin & 右編碼器 B 相的 GPIO 腳位                                     \\ \hline
+TRS\_CURVE       & TRS 曲線參數，從 rospy 取得的參數                             \\ \hline
+TRS\_COEFF       & TRS 系數                                                      \\ \hline
+TICKS\_PER\_REV  & 每圈編碼器脈衝數，從 rospy 取得的參數                         \\ \hline
+TICKS\_PER\_METER & 每米編碼器脈衝數，從 rospy 取得的參數                         \\ \hline
+TRACK\_WIDTH     & 車輪軸距，從 rospy 取得的參數                                 \\ \hline
+MIN\_PWM\_VAL    & 最小 PWM 值，從 rospy 取得的參數                             \\ \hline
+MAX\_PWM\_VAL    & 最大 PWM 值，從 rospy 取得的參數                             \\ \hline
+MIN\_X\_VEL      & 最小 X 軸速度，從 rospy 取得的參數                           \\ \hline
+new\_ttr         & 目標脈衝率值是否為新值的標誌                                 \\ \hline
+L\_ttr           & 左輪目標脈衝率                                               \\ \hline
+R\_ttr           & 右輪目標脈衝率                                               \\ \hline
+L\_spd           & 左馬達速度（正 8 位元整數）用於 PWM 信號                      \\ \hline
+R\_spd           & 右馬達速度（正 8 位元整數）用於 PWM 信號                      \\ \hline
+L\_mode          & 馬達模式：'FWD'（前進）、'REV'（後退）、'OFF'（關閉）        \\ \hline
+R\_mode          & 馬達模式：'FWD'（前進）、'REV'（後退）、'OFF'（關閉）        \\ \hline
+KP               & PID 控制器比例參數，從 rospy 取得的參數                      \\ \hline
+KD               & PID 控制器微分參數，從 rospy 取得的參數                      \\ \hline
+L\_prev\_err     & 左輪上一次誤差                                               \\ \hline
+R\_prev\_err     & 右輪上一次誤差                                               \\ \hline
+MAX\_PID\_TRIM   & PID 修正值的最大值，從 rospy 取得的參數                      \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{監聽主題}
+topic是ros常用的通訊方式，這邊一口氣會跑三個function，
+主要是先監聽topic之後在由這裡取的，x的移動數據與z的旋轉數
+據再來就開始計算。
+好的，讓我一行一行解釋這段程式碼：
+
+global L\_ttr, R\_ttr, new\_ttr：聲明要使用的全局變數。
+
+vel\_L\_wheel = x - (theta * (TRACK\_WIDTH / 2))：計算左輪的
+目標線速度，根據機器人的運動學模型，左輪速度為 x 減去角速度
+乘以車輪軸距的一半。
+
+vel\_R\_wheel = x + (theta * (TRACK\_WIDTH / 2))：計算右輪的
+目標線速度，右輪速度為 x 加上角速度乘以車輪軸距的一半。
+
+L\_rate = vel\_L\_wheel * TICKS\_PER\_METER：將左輪的目標線速
+度轉換為目標脈衝率，即將每秒米轉換為每秒脈衝數。
+
+R\_rate = vel\_R\_wheel * TICKS\_PER\_METER：將右輪的目標線速
+度轉換為目標脈衝率，同樣是將每秒米轉換為每秒脈衝數。
+
+if L\_ttr != L\_rate:：檢查左輪的目標脈衝率是否與前一次計算
+的值不同。
+
+L\_ttr = L\_rate：如果左輪的目標脈衝率與前一次計算的值不同，
+則更新左輪的目標脈衝率為新計算的值。
+
+new\_ttr = True：將 new\_ttr 標誌設置為 True，表示左輪的目標
+脈衝率是新值。
+
+if R\_ttr != R\_rate:：檢查右輪的目標脈衝率是否與前一次計算
+的值不同。
+
+R\_ttr = R\_rate：如果右輪的目標脈衝率與前一次計算的值不同，則更新右輪的目標脈衝率為新計算的值。
+
+new\_ttr = True：將 new\_ttr 標誌設置為 True，表示右輪的目標脈
+衝率是新值。
+
+這段程式碼的作用是根據機器人的運動學模型計算出左右輪的目標脈
+衝率，並檢查是否有新的目標脈衝率值。
+
+\subsubsection{tr\_to\_spd計算速度}
+這段程式碼是一個註釋，說明了一個功能，即將目標脈衝率轉換為速度值。根據註釋，目標脈衝率和傳送到馬達的速度信號之間的關係大致遵循一條抛物線曲線，在低速時斜率較緩。這種關係通常通過由一系列線性片段組成的分段線性曲線來近似。在算法中，將檢查脈衝率以確定應用於其的段，從斜率最陡（最高值）的段開始。然後使用適用的斜率和截距來計算速度值。這樣的轉換通常用於將脈衝率轉換為實際速度值，以便控制機器人達到特定的運動行為。
+
+\subsubsection{set\_mtr\_spd設定馬達的轉速}
+這段程式碼是一個註釋，描述了一個功能，即根據左右輪的目標脈衝率來推斷馬達的速度和模式，並驅動馬達。目標脈衝率被轉換為"最佳猜測"的 PWM 值，以使用經驗曲線來驅動馬達。
+
+註釋還指出，脈衝率可以是正數或負數，而馬達速度（spd）將始終是一個正的 8 位元整數（0-255）。因此，需要為馬達指定一個模式：FWD（前進）、REV（後退）或 OFF（關閉）。
+
+在低速時，一個非常小的 PWM 信號很難使馬達克服一個本質上無法預測的摩擦量。這使得機器人非常難以準確地跟隨命令速度。
+
+為了提高機器人準確跟隨命令速度的能力（特別是在進行緩慢的原地轉向時尤為明顯），使用 PID 反饋來最小化目標脈衝率和實際脈衝率之間的差異（誤差）。
+
+\subsubsection{主函數}
+
+這段程式碼的作用是訂閱 /cmd\_vel 主題以獲取機器人的速度指令，並發布左右輪的編碼器數據和機器人的實際速度。同時，它也設置了一個迴圈來處理速度控制和數據發布。具體來說，這段程式碼執行以下操作：
+
+監聽 /cmd\_vel 主題，並調用 listener\_callback 函數來處理速度指令。
+
+設置發布左右輪編碼器數據的發布者，以及發布機器人實際速度的發布者。
+
+計算左右輪的實際脈衝率，並根據脈衝率計算機器人的實際速度。
+
+發布左右輪的編碼器數據和機器人的實際速度。
+
+設置馬達速度以控制機器人運動。
+
+在迴圈中使用 rate.sleep() 來控制迴圈頻率，以達到每秒 10 次的發布頻率。
+
+在程式執行結束時，進行清理操作，包括取消訂閱編碼器數據、停止馬達控制信號的發送以及關閉 pigpio。
+
+這樣的程式碼結構通常用於機器人控制系統中，用於實現速度控制和速度反饋。
+
+
+
+
+

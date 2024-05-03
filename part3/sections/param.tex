@@ -1,0 +1,112 @@
+
+\begin{lstlisting}[language=Python, caption=publish\_params.py]
+    """
+Publish robot parameters for various reasons:
+    They might be needed by more than one package.
+    It might be nice to be able to modify them at runtime.
+    It is an obvious place to find them.
+
+See doc at http://wiki.ros.org/rospy/Overview/Parameter%20Server
+"""
+import rospy
+
+# Robot parameter values
+ROBOT_TICKS_PER_REV = 686.4  # 24:1 worm, 26:10 spur, 11 pole encoder magnet
+ROBOT_WHEEL_CIRCUMFERENCE = 0.213  # meters
+ROBOT_TICKS_PER_METER = int(ROBOT_TICKS_PER_REV / ROBOT_WHEEL_CIRCUMFERENCE)
+ROBOT_TRACK_WIDTH = .187  # Wheel Separation Distance (meters)
+ROBOT_MIN_PWM_VAL = 80  # Minimum PWM value motors will turn reliably
+ROBOT_MAX_PWM_VAL = 255  # Maximum allowable PWM value
+ROBOT_MIN_X_VEL = 0.1  # Minimum x velocity robot can manage (m/s)
+ROBOT_MAX_X_VEL = 0.25  # Maximum x velocity robot can manage (m/s)
+ROBOT_MIN_Z_VEL = 0.8  # Minimum theta-z velocity robot can manage (rad/s)
+ROBOT_MAX_Z_VEL = 3.0  # Maximum theta-z velocity robot can manage (rad/s)
+ROBOT_MTR_KP = 0.5  # Proportional coeff
+ROBOT_MTR_KD = 0.2  # Derivative coeff
+ROBOT_MTR_MAX_PID_TRIM = 30  # Max allowable value for PID trim term
+
+# end points of segments of piecewise linear curve in descending order
+# where curve relates tick rate (tr) to motor speed (s)
+ROBOT_TRS_CURVE = ((892, 240),
+                   (578, 140),
+                   (360, 100),
+                   (142, 80))
+
+param_dict = {
+    'ROBOT_TICKS_PER_REV': ROBOT_TICKS_PER_REV,
+    'ROBOT_WHEEL_CIRCUMFERENCE': ROBOT_WHEEL_CIRCUMFERENCE,
+    'ROBOT_TICKS_PER_METER': ROBOT_TICKS_PER_METER,
+    'ROBOT_TRACK_WIDTH': ROBOT_TRACK_WIDTH,
+    'ROBOT_MIN_PWM_VAL': ROBOT_MIN_PWM_VAL,
+    'ROBOT_MAX_PWM_VAL': ROBOT_MAX_PWM_VAL,
+    'ROBOT_MIN_X_VEL': ROBOT_MIN_X_VEL,
+    'ROBOT_MAX_X_VEL': ROBOT_MAX_X_VEL,
+    'ROBOT_MIN_Z_VEL': ROBOT_MIN_Z_VEL,
+    'ROBOT_MAX_Z_VEL': ROBOT_MAX_Z_VEL,
+    'ROBOT_TRS_CURVE': ROBOT_TRS_CURVE,
+    'ROBOT_MTR_KP': ROBOT_MTR_KP,
+    'ROBOT_MTR_KD': ROBOT_MTR_KD,
+    'ROBOT_MTR_MAX_PID_TRIM': ROBOT_MTR_MAX_PID_TRIM
+    }
+    
+for key, val in param_dict.items():
+    rospy.set_param(key, val)
+
+\end{lstlisting}
+
+\subsection{註解內容}
+將機器人參數發布出去有幾個原因：
+\begin{enumerate}
+    \item 它們可能被多個軟體包需要。
+    \item 在運行時修改它們是一件好事。
+    \item 它是一個明顯的地方可以找到它們。
+\end{enumerate}
+
+\subsection{幾本內容}
+作者事先定義各個參數的數值，之後在用字典形式存起來
+之後在用items()來將key與value成對的存成元組，之後就
+可以用rospy的set\_param()來將數值發布出去。
+
+\clearpage
+\subsection{參數表}
+其中上面的參數含意如下表
+\ref{table:example2}。
+\begin{table}[ht]
+\centering
+\caption{參數表}
+\begin{tabular}{|l|l|}
+\hline
+參數名稱 & 定義 \\
+\hline
+ROBOT\_TICKS\_PER\_REV & 每轉的編碼器脈衝數（24:1蠕蟲、26:10齒輪、11極磁鐵） \\
+\hline
+ROBOT\_WHEEL\_CIRCUMFERENCE & 輪子周長（米） \\
+\hline
+ROBOT\_TICKS\_PER\_METER & 每米的編碼器脈衝數（整數） \\
+\hline
+ROBOT\_TRACK\_WIDTH & 輪子間的距離（米） \\
+\hline
+ROBOT\_MIN\_PWM\_VAL & 馬達可靠轉動的最小PWM值 \\
+\hline
+ROBOT\_MAX\_PWM\_VAL & 允許的最大PWM值 \\
+\hline
+ROBOT\_MIN\_X\_VEL & 機器人可管理的最小x速度（米/秒） \\
+\hline
+ROBOT\_MAX\_X\_VEL & 機器人可管理的最大x速度（米/秒） \\
+\hline
+ROBOT\_MIN\_Z\_VEL & 機器人可管理的最小theta-z速度（弧度/秒） \\
+\hline
+ROBOT\_MAX\_Z\_VEL & 機器人可管理的最大theta-z速度（弧度/秒） \\
+\hline
+ROBOT\_MTR\_KP & 馬達控制的比例係數 \\
+\hline
+ROBOT\_MTR\_KD & 馬達控制的微分係數 \\
+\hline
+ROBOT\_MTR\_MAX\_PID\_TRIM & PID調整項的最大允許值 \\
+\hline
+ROBOT\_TRS\_CURVE & 編碼器每秒產生的脈衝數與馬達速度的曲線描述\\
+\hline
+\end{tabular}
+\label{table:example2}
+\end{table}
+

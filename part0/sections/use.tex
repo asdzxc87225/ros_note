@@ -1,0 +1,40 @@
+使用方式有幾個東西要啟動
+\begin{enumerate}
+    \item 機器啟動
+        \begin{itemize}
+            \item 光學雷達
+            \item 馬達區動
+            \item urdf 與 tf樹
+        \end{itemize}
+    \item 導航算法
+        \begin{itemize}
+            \item slam
+            \item nav套件
+        \end{itemize}
+\end{enumerate}
+\subsection{機器啟動}
+依序下這幾個指令來請動機器人。
+\begin{tcolorbox}
+\begin{verbatim}
+    ros2 launch sllidar_ros2 sllidar_a1_launch.py
+    ros2 launch project display.launch.py
+    ros2 launch project wheel_launch.py
+\end{verbatim}
+\end{tcolorbox}
+\subsubsection{注意事項}
+
+起動時要注意ttyUSB的設備，這跟linux的設備管理有關西，先接入的設備是USB0再來是
+USB1，所以要注意設備連接的順序。
+
+這些程式要在ros2設備端來啟動。
+
+\subsection{導航算法}
+啟動完機器設備後就可以開始啟動算法。
+\begin{tcolorbox}
+\begin{verbatim}
+    ros2 launch nav2_bringup navigation_launch.py
+    ros2 launch slam_toolbox online_async_launch.py
+\end{verbatim}
+\end{tcolorbox}
+\subsubsection{注意事項}
+要注意啟動算法之錢必須確定tf樹的設定，這個會影響計算的結果且要注意是否有正確指向。

@@ -6,9 +6,11 @@
 \usepackage{graphicx}
 \usepackage{geometry}
 \usepackage{hyperref}
-
+\usepackage{tabularx}
+\usepackage{afterpage}
+\usepackage{tcolorbox}
 \setCJKmainfont{Noto Sans Mono CJK TC} % 設定中文字體
-\setCJKmonofont{Noto Sans Mono CJK TC} % 設定等寬字體
+\setCJKmonofont{Noto Sans Mono CJK TC}
 \geometry{a4paper, left=2cm, right=2cm, top=2cm, bottom=2cm}
 \hypersetup{
     colorlinks=true,    % 将书签文字用颜色表示
@@ -17,6 +19,28 @@
     filecolor=magenta,  % 文件链接的颜色
     urlcolor=cyan       % URL的颜色
 }
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    commentstyle=\color{green!40!black},
+    keywordstyle=\color{blue},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    rulecolor=\color{black!30},
+    breaklines=true,
+    breakatwhitespace=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    captionpos=b,
+    frame=tb
+}
+
 
 
 \title{ROS 筆記}
@@ -28,7 +52,11 @@
 \maketitle
 \tableofcontents
 
-\part{CLI 操作}
+
+\clearpage
+\part{ros2入門CLI操作}
+接下來的資料來源於ros官方文件，可以上去看看。
+\href{https://docs.ros.org/en/humble/Installation.html}{ros2}
 \section{CLI 設定}
 \input{./part1/sections/cli_settings.tex}
 \section{練習用的模擬器}
@@ -47,8 +75,10 @@
 \input{./part1/sections/launching.tex}
 \section{記錄和回放數據}
 \input{./part1/sections/bag.tex}
+\section{指令}
+\input{./part1/sections/command.tex}
 
-\part{客戶端庫使用}
+\part{程式設計:客戶端庫使用}
 客戶端函式庫是允許使用者實作 ROS 2 程式碼的 API。使用客戶端程式庫，使用者可以存取 ROS 2 概念，例如節點、主題、服務等。
 \section{colcon建立環境}
 \input{./part2/sections/colcon.tex}
@@ -57,5 +87,55 @@
 \section{編寫一個簡單的發布者和訂閱者 (Python)}
 \input{./part2/sections/publisher\_and\_subscriber.tex}
 
+
+
+\part{分析dblanding/diy-ROS-robot}
+\input{./part3/sections/outline.tex}
+\section{機器人參數}
+\input{./part3/sections/param.tex}
+\section{輪組控制}
+\input{./part3/sections/encoder.tex}
+\section{里程計通訊}
+\input{./part3/sections/odom.tex}
+\section{導航設定}
+\input{./part3/sections/nav.tex}
+\section{總啟動檔}
+\input{./part3/sections/bringup.tex}
+
+\part{專題製作}
+\section{操作方式}
+\input{./part0/sections/use.tex}
+\section{工作大綱}
+\input{./part0/sections/Outline.tex}
+\section{外觀電路設計}
+\input{./part0/sections/material.tex}
+\input{./part0/sections/circuit.tex}
+
+\clearpage
+\section{輪子控制}
+\input{./part0/sections/bringup.tex}
+\section{輪子控制程式}
+\input{./part0/sections/Wheel.tex}
+
+\section{里程記設定}
+\input{./part0/sections/odometer.tex}
+\section{導航設定}
+\input{./part0/sections/navigation.tex}
+\clearpage
+\section{參數設定}
+\input{./part0/sections/param.tex}
+\section{啟動檔}
+\input{./part0/sections/launch.tex}
+\section{SLAM Toolbox}
+\input{./part0/sections/slam.tex}
+\section{lidar}
+\input{./part0/sections/lidar.tex}
+\section{yolov8辨識}
+\input{./part0/sections/yolov8.tex}
+
+\section{實做紀錄}
+\input{./part0/sections/01.tex}
+\section{4月實做紀錄}
+\input{./part0/sections/02.tex}
 
 \end{document}

@@ -1,0 +1,157 @@
+\subsection{ros指令}
+ros 的指令可用下面的功能
+\begin{enumerate}
+    \item action - 用於處理與動作相關的操作。
+    \item bag - 用於處理與rosbag相關的操作。
+    \item component - 用於處理與組件相關的操作。
+    \item control - 用於處理與控制相關的操作。
+    \item daemon - 用於處理與守護程序相關的操作。
+    \item doctor - 用於檢查ROS設置和其他潛在問題。
+    \item interface - 顯示與ROS接口相關的信息。
+    \item launch - 用於運行一個launch文件。
+    \item lifecycle - 用於處理與生命周期相關的操作。
+    \item multicast - 用於處理與多播相關的操作。
+    \item node - 用於處理與節點相關的操作。
+    \item param - 用於處理與參數相關的操作。
+    \item pkg - 用於處理與包相關的操作。
+    \item run - 用於運行一個特定包的可執行文件。
+    \item security - 用於處理與安全相關的操作。
+    \item service - 用於處理與服務相關的操作。
+    \item topic - 用於處理與主題相關的操作。
+    \item wtf - 將wtf作為doctor的別名使用。
+\end{enumerate}
+
+\subsection{node}
+node 有兩個參數可以用
+\begin{enumerate}
+    \item info  Output information about a node
+    \item list  Output a list of available nodes
+\end{enumerate}
+\subsubsection{info}
+ros2 node info [選項] 節點名稱
+\begin{enumerate}
+    \item -h, --help：顯示幫助信息並退出。
+    \item --spin-time SPIN\_TIME：在等待發現時的旋轉時間（僅在不使用已運行的守護程序時適用）。
+    \item -s, --use-sim-time：啟用ROS模擬時間。
+    \item --no-daemon：不要生成或使用已運行的守護程序。
+    \item --include-hidden：顯示隱藏的主題、服務和動作。
+\end{enumerate}
+\subsubsection{list}
+用法：ros2 node list [選項]
+\begin{enumerate}
+    \item -h, --help：顯示幫助信息並退出。
+    \item --spin-time SPIN\_TIME：在等待發現時的旋轉時間（僅在不使用已運行的守護程序時適用）。
+    \item -s, --use-sim-time：啟用ROS模擬時間。
+    \item --no-daemon：不要生成或使用已運行的守護程序。
+    \item -a, --all：顯示所有節點，包括隱藏的節點。
+    \item -c, --count-nodes：僅顯示發現的節點數量。
+\end{enumerate}
+
+\subsection{topic}
+\begin{enumerate}
+    \item bw：顯示主題使用的帶寬。
+    \item delay：顯示從標頭中的時間戳的主題延遲。
+    \item echo：從主題輸出消息。
+    \item find：輸出給定類型的可用主題列表。
+    \item hz：將平均發布速率打印到屏幕上。
+    \item info：打印有關主題的信息。
+    \item list：輸出可用主題的列表。
+    \item pub：向主題發布消息。
+    \item type：打印主題的類型。
+\end{enumerate}
+\subsubsection{bw}
+用法：ros2 topic bw [選項] 主題名稱
+\begin{enumerate}
+    \item -h, --help：顯示幫助信息並退出。
+    \item --window WINDOW, -w WINDOW：計算速率的最大窗口大小，以消息數為單位（默認值：100）。
+    \item --spin-time SPIN\_TIME：在等待發現時的旋轉時間（僅在不使用已運行的守護程序時適用）。
+    \item -s, --use-sim-time：啟用ROS模擬時間。
+\end{enumerate}
+\subsubsection{delay}
+用法：ros2 topic delay [選項] 主題名稱
+
+選項：
+
+\begin{enumerate}
+    \item -h, --help：顯示幫助信息並退出。
+    \item --window WINDOW, -w WINDOW：計算速率的窗口大小，以消息數為單位（默認值：10000）。
+    \item --spin-time SPIN\_TIME：在等待發現時的旋轉時間（僅在不使用已運行的守護程序時適用）。
+    \item -s, --use-sim-time：啟用ROS模擬時間。
+\end{enumerate}
+
+\subsubsection{echo}
+用法：ros2 topic echo [選項] 主題名稱 [消息類型]
+
+\begin{enumerate}
+    \item -h, --help：顯示幫助信息並退出。
+    \item --spin-time SPIN\_TIME：在等待發現時的旋轉時間（僅在不使用已運行的守護程序時適用）。
+    \item -s, --use-sim-time：啟用ROS模擬時間。
+    \item --no-daemon：不要生成或使用已運行的守護程序。
+    \item --qos-profile {preset\_profile}：訂閱時使用的質量服務預設配置。
+    \item --qos-depth N：訂閱時的隊列大小設置。
+    \item --qos-history {history\_setting}：訂閱時的樣本歷史記錄設置。
+    \item --qos-reliability {reliability\_setting}：訂閱時的可靠性設置。
+    \item --qos-durability {durability\_setting}：訂閱時的耐久性設置。
+    \item --csv：將所有遞歸字段用逗號分隔輸出（例如，用於繪圖）。
+    \item --field FIELD：回顯消息的選定字段。使用'.'來選擇子字段。
+    \item --full-length, -f：對於陣列、字節和長度> '--truncate-length'的字符串，輸出所有元素。
+    \item --truncate-length TRUNCATE\_LENGTH, -l TRUNCATE\_LENGTH：將陣列、字節和字符串截斷為指定長度。
+    \item --no-arr：不要打印消息的陣列字段。
+    \item --no-str：不要打印消息的字符串字段。
+    \item --flow-style：以塊樣式打印集合（與csv格式不可用）。
+    \item --lost-messages：已棄用，不起作用。
+    \item --no-lost-messages：不要報告消息丟失。
+    \item --raw：回顯原始二進制表示。
+    \item --filter FILTER\_EXPR：用於過濾要打印的消息的Python表達式。
+    \item --once：僅打印收到的第一條消息，然後退出。
+\end{enumerate}
+\subsubsection{find}
+用法：ros2 topic find [選項] 主題類型
+
+
+\begin{enumerate}
+    \item -h, --help：顯示幫助信息並退出。
+    \item --spin-time SPIN\_TIME：在等待發現時的旋轉時間（僅在不使用已運行的守護程序時適用）。
+    \item -s, --use-sim-time：啟用ROS模擬時間。
+    \item --no-daemon：不要生成或使用已運行的守護程序。
+    \item -c, --count-topics：僅顯示發現的主題數量。
+    \item --include-hidden-topics：將隱藏的主題也考慮在內。
+\end{enumerate}
+\subsubsection{hz}
+用法：ros2 topic hz [選項] 主題名稱
+\begin{enumerate}
+    \item -h, --help：顯示幫助信息並退出。
+    \item --window WINDOW, -w WINDOW：計算速率的窗口大小，以消息數為單位（默認值：10000）。
+    \item --filter EXPR：僅測量與指定Python表達式匹配的消息。
+    \item --wall-time：使用實際時間計算速率，在模擬期間未發佈時可以很有用。
+    \item --spin-time SPIN\_TIME：在等待發現時的旋轉時間（僅在不使用已運行的守護程序時適用）。
+    \item -s, --use-sim-time：啟用ROS模擬時間。
+\end{enumerate}
+\subsubsection{info}
+用法：ros2 topic info [選項] 主題名稱
+
+\begin{enumerate}
+    \item -h, --help：顯示幫助信息並退出。
+    \item --spin-time SPIN\_TIME：在等待發現時的旋轉時間（僅在不使用已運行的守護程序時適用）。
+    \item -s, --use-sim-time：啟用ROS模擬時間。
+    \item --no-daemon：不要生成或使用已運行的守護程序。
+    \item --verbose, -v：打印詳細信息，如節點名稱、節點命名空間、主題類型、GUID以及訂閱者和發布者的QoS配置文件。
+\end{enumerate}
+
+\subsection{service}
+用法：ros2 service [選項] <命令>
+
+選項：
+\begin{enumerate}
+    \item -h, --help：顯示幫助信息並退出。
+    \item --include-hidden-services：將隱藏的服務也考慮在內。
+\end{enumerate}
+命令：
+\begin{enumerate}
+    \item call：調用一個服務。
+    \item find：輸出給定類型的可用服務列表。
+    \item list：輸出可用服務的列表。
+    \item type：輸出服務的類型。
+\end{enumerate}
+\subsection{pkg}
+\subsection{rum}

@@ -1,0 +1,79 @@
+這部份會去監聽輪組控制時發布的三個主題。
+\begin{enumerate}
+    \item /right\_ticks 主題，用於接收右輪的編碼器數據。
+    \item /left\_ticks 主題，用於接收左輪的編碼器數據。
+    \item /act\_vel 主題，用於接收機器人的實際速度信息。
+\end{enumerate}
+\subsection{用到的套件}
+這部份用到的套件如下表\ref{tab:modules_and_usage}
+\begin{table}[ht]
+\centering
+\caption{模組/類別及其用途}
+\label{tab:modules_and_usage}
+\begin{tabular}{|l|p{10cm}|}
+\hline
+\textbf{模組/類別} & \textbf{用途} \\
+\hline
+rospy & 創建 ROS 節點、訂閱和發佈主題等 \\
+tf2\_ros & 處理轉換關係 \\
+Odometry & 定義機器人的里程計信息 \\
+Point & 定義機器人的位置信息 \\
+Pose & 定義機器人的姿態信息 \\
+Quaternion & 定義機器人的旋轉信息（用四元數表示） \\
+Twist & 定義機器人的速度信息 \\
+Vector3 & 定義三維向量 \\
+TransformStamped & 定義轉換關係的消息類型 \\
+Int32 & 定義整數的消息類型 \\
+Float32 & 定義浮點數的消息類型 \\
+asin & 計算反正弦值 \\
+sin & 計算正弦值 \\
+cos & 計算餘弦值 \\
+pi & π 值 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{變數初始化}
+這段程式碼是用來初始化 ROS 节点的，並且從 ROS 參數伺服器中獲取了兩個重要的參數值：每米的編碼器脈衝數和車輪間的距離。接著定義了一些變量，包括左輪和右輪的編碼器脈衝數、機器人的線速度（米/秒）和角速度（弧度/秒）。這些變量將用於計算機器人的里程計數據。
+
+\subsection{回調函數}
+這段程式碼定義了兩個回調函數 left\_tick\_callback 和
+right\_tick\_callback，分別用於接收來自左輪和右輪編碼器的訊息。
+這兩個函數將分別更新全局變量 left\_ticks 和 right\_ticks 的
+值，以便後續計算里程。接著，定義了兩個函數 
+left\_tick\_listener 和 right\_tick\_listener，用於訂閱 ROS
+訊息主題 /left\_ticks 和 /right\_ticks，並將它們與對應的
+回調函數關聯起來，以便接收編碼器訊息。
+
+回調函數 act\_vel\_callback，用於從 Twist 訊息中提取 linear.x
+和 angular.z 的值。這兩個值將被存儲在全局變量 vx 和 vth 中，
+以便後續計算里程。接著，定義了一個函數 act\_vel\_listener，用
+於訂閱 ROS 訊息主題 /act\_vel，並將其與 act\_vel\_callback 回調
+函數關聯起來，以接收實際速度訊息。
+
+\subsection{主迴圈}
+
+這段程式碼包含了主要的里程計計算和發佈邏輯。在一個循環中，
+它首先計算了兩個輪子的行進距離，然後根據兩輪之間的差異計算
+機器人的轉向角度。接著，它使用這些數據更新機器人的位置和姿勢。
+最後，它發佈了里程計訊息和 TF2 的 Transform。
+
+需要注意的是，在計算轉向角度時，程式碼使用了 asin 函數。
+但是，這可能會產生 ValueError，因為當 
+cycle\_diff / TRACK\_WIDTH 的絕對值大於1時，asin 的參數
+必須在 -1 和 1 之間。當發生這種情況時，程式碼將 
+cycle\_angle 設置為0，並打印出一條消息，並繼續運行。
+
+此外，程式碼還設置了里程計和速度訊息的協方差矩陣。這些值
+通常是根據機器人的實際性能和環境來調整和優化的。最後，它使
+用 publish 方法發佈里程計訊息，並使用 r.sleep() 使循環按
+照設置的頻率運行。
+
+程式碼是一個循環，持續運行直到ROS被關閉。在每個循環中，它計
+算了自上一次循環以來的時間差，並根據左右輪的編碼器讀數計算
+了機器人的行進距離和角度變化。然後，它使用這些數據來更新機
+器人的位姿（位置和方向），並將該信息發布到ROS中的/odom主題
+上，以便其他節點可以使用。最後，它更新了上一次循環的時間，
+並通過r.sleep()等待下一個循環。這個循環使機器人能夠持續跟
+踪自身的運動狀態，並在ROS中提供里程計信息。
+

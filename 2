@@ -1,0 +1,128 @@
+這部份作者寫了三個文件分別如下。
+\begin{enumerate}
+    \item rotary\_encoder.py 編碼器計算
+    \item motor\_calibrator.py 校準馬達的參數
+    \item encoder\_publisher.py 控制與發訊息
+\end{enumerate}
+
+\subsection{rotary\_encoder.py程式分析 }
+\subsection{Decoder物件建構}
+開頭的地方可以看到用到了pigpio，這個是一個數梅派的gpio套件有了
+這個就可以使用gpio接腳。
+
+首先是class的－init的建構內容可以看到會數入下面幾個參數。
+\begin{enumerate}
+    \item pi：用於控制GPIO的pigpio對象。
+    \item gpioA和gpioB：要監聽的兩個GPIO腳。
+    \item callback：當GPIO腳狀態變化時調用的回調函數。
+\end{enumerate}
+之後設定初始的數值。
+\begin{enumerate}
+    \item levA和levB：記錄兩個GPIO腳的狀態（0或1）。
+    \item lastGpio：上一次觸發回調函數的GPIO腳。
+    \item pi.set\_mode：設置GPIO腳的模式為輸入。
+    \item pi.set\_pull\_up\_down：設置GPIO腳的上拉/下拉電阻。
+    \item pi.callback：設置GPIO腳的回調函數，當腳的電平變化時調用 \_pulse 方法。
+\end{enumerate}
+
+\begin{lstlisting}[language=Python, caption=開頭建立編碼器]
+import pigpio
+class Decoder:
+   """Class to decode mechanical rotary encoder pulses."""
+   def __init__(self, pi, gpioA, gpioB, callback):
+      self.pi = pi
+      self.gpioA = gpioA
+      self.gpioB = gpioB
+      self.callback = callback
+      self.levA = 0
+      self.levB = 0
+      self.lastGpio = None
+      self.pi.set_mode(gpioA, pigpio.INPUT)
+      self.pi.set_mode(gpioB, pigpio.INPUT)
+      self.pi.set_pull_up_down(gpioA, pigpio.PUD_UP)
+      self.pi.set_pull_up_down(gpioB, pigpio.PUD_UP)
+      self.cbA = self.pi.callback(gpioA, pigpio.EITHER_EDGE, self._pulse)
+      self.cbB = self.pi.callback(gpioB, pigpio.EITHER_EDGE, self._pulse)
+\end{lstlisting}
+
+\subsection{轉向監測}
+這個方法 \_pulse 是用來解碼旋轉編碼器的脈衝信號的。
+旋轉編碼器通過兩個GPIO腳（A和B）發送脈衝信號，這些脈
+衝信號會根據旋轉方向和速度變化。
+
+輸入的變數如下。
+\begin{enumerate}
+    \item gpio 是觸發回調的 GPIO 腳的編號。
+    \item level 是該 GPIO 腳的電平狀態，可以是 0 或 1。
+    \item tick 是回調被觸發時的時間戳記，用來測量時間間隔或其他時間相關的操作。
+\end{enumerate}
+
+在地一個if是要函數中觸發的 GPIO 腳的編號來更新對應的狀態變數，
+再來的會是一個兩層的if結構，第一層if就是用於去除抖動也就是同
+一個電位多次觸發的狀況，再來一層就是判斷正反轉
+(正轉self.callback(1))。
+\begin{lstlisting}[language=Python, caption=\_pulse方法]
+   def _pulse(self, gpio, level, tick):
+      """
+      Decode the rotary encoder pulse.
+
+                   +---------+         +---------+      0
+                   |         |         |         |
+         A         |         |         |         |
+                   |         |         |         |
+         +---------+         +---------+         +----- 1
+
+             +---------+         +---------+            0
+             |         |         |         |
+         B   |         |         |         |
+             |         |         |         |
+         ----+         +---------+         +---------+  1
+      """
+      if gpio == self.gpioA:
+         self.levA = level
+      else:
+         self.levB = level;
+
+      if gpio != self.lastGpio: # debounce
+         self.lastGpio = gpio
+         if   gpio == self.gpioA and level == 1:
+            if self.levB == 1:
+               self.callback(1)
+         elif gpio == self.gpioB and level == 1:
+            if self.levA == 1:
+               self.callback(-1)
+\end{lstlisting}
+\subsection{關閉gpio}
+這段程式碼是用來取消旋轉編碼器的解碼器。在這個方法中，
+它取消了對 GPIO 腳的監聽，從而停止解碼器的操作。通常
+在不再需要監聽旋轉編碼器的脈衝信號時調用這個方法，以節
+省資源和確保正確的操作。
+
+\begin{lstlisting}[language=Python, caption=取消監控]
+   def cancel(self):
+      """
+      Cancel the rotary encoder decoder.
+      """
+      self.cbA.cancel()
+      self.cbB.cancel()
+
+\end{lstlisting}
+
+\subsection{測試程式}
+\begin{lstlisting}[language=Python, caption=測試腳本]
+if __name__ == "__main__":
+   import time
+   import pigpio
+   import rotary_encoder
+   pos = 0
+   def callback(way):
+      global pos
+      pos += way
+      print("pos={}".format(pos))
+   pi = pigpio.pi()
+   decoder = rotary_encoder.Decoder(pi, 7, 8, callback)
+   time.sleep(300)
+   decoder.cancel()
+   pi.stop()
+\end{lstlisting}
+

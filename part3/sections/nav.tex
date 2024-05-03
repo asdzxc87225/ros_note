@@ -1,0 +1,216 @@
+這部份作者沒寫什麼原始檔，基本上就設定ros變數以及啟動檔。表
+\ref{tab:nvparm}
+
+\subsection{param(變數)設定}
+\begin{table}[ht]
+\centering
+\caption{參數檔}
+\label{tab:nvparm}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{檔名} & \textbf{功能} \\
+\hline
+base\_local\_planner\_params.yaml & 局部路徑規劃器參數設定檔。\\
+\hline
+costmap\_common\_params.yaml & 成本地圖共用參數設定檔。\\
+\hline
+dwa\_local\_planner\_params.yaml &  動態窗口法局部路徑規劃器參數設定\\
+\hline
+global\_costmap\_params.yaml & 全局成本地圖參數設定檔\\
+\hline
+global\_planner\_params.yaml & 全局路徑規劃器參數設定檔。\\
+\hline
+local\_costmap\_params.yaml & 局部成本地圖參數設定檔。\\
+\hline
+move\_base\_params.yaml & Move Base功能包參數設定檔。\\
+\hline
+navfn\_global\_planner\_params.yaml & navfn全局路徑規劃器參數設定檔。\\
+\hline
+\end{tabular}
+\end{table}
+\subsubsection{base\_local\_planner\_params.yaml}
+配置檔定義了 TrajectoryPlannerROS 的設定，主要用於 move\_base 套件中的軌跡規劃器。以下是各參數的簡要說明：
+\begin{itemize}
+    \item max\_vel\_x：最大直線速度。
+    \item min\_vel\_x：最小直線速度。
+    \item holonomic\_robot：是否為全向移動機器人。
+    \item meter\_scoring：是否對距離進行計分。
+    \item xy\_goal\_tolerance：目標點的 XY 距離容忍度。
+    \item yaw\_goal\_tolerance：目標點的 Yaw（偏航角）容忍度。
+\end{itemize}
+\subsubsection{costmap\_common\_params.yaml}
+\begin{itemize}
+    \item obstacle\_range: 障礙物檢測範圍為 3.0 米。
+    \item raytrace\_range: 射線追踪範圍為 3.5 米。
+    \item footprint: 機器人的車輪軌跡形狀，由四個座標點組成，表示機器人在地圖上的輪廓。
+    \item map\_topic: 使用的地圖主題。
+    \item robot\_base\_frame: 機器人底盤的坐標系。
+    \item update\_frequency: 更新頻率為每秒 10 次。
+    \item publish\_frequency: 發布頻率為每秒 10 次。
+    \item transform\_tolerance: 變換的容忍度為 0.3。
+\end{itemize}
+插件：
+
+static\_layer: 靜態圖層，用於處理靜態障礙物的成本。
+obstacle\_layer: 障礙物圖層，用於接收雷射掃描器的觀測數據，並更新成本地圖。
+inflation\_layer: 膨脹圖層，用於在成本地圖中將障礙物周圍的區域擴大，以確保機器人周圍有足夠的安全空間。
+這段配置文件是用於設置 ROS 的 move\_base 套件中的 costmap 部分，用於在導航過程中生成和更新地圖的成本地圖。這些參數設置了機器人在地圖上的輪廓、障礙物檢測範圍、射線追踪範圍以及地圖的更新頻率和發布頻率等。插件部分定義了靜態圖層、障礙物圖層和膨脹圖層，這些圖層用於處理靜態障礙物的成本、接收雷射掃描器的觀測數據以及在成本地圖中擴大障礙物周圍的區域。
+
+\subsubsection{dwa\_local\_planner\_params.yaml}
+
+這段配置文件是用於設置 DWAPlannerROS，這是 ROS 中用於差動驅動機器人的動態窗口法 (DWA) 軌跡規劃器的參數。以下是各部分的說明：
+
+\begin{itemize}
+    \item Robot Configuration Parameters: 設置機器人的速度限制和加速度限制，以及機器人的運動方式（例如差動驅動）。
+    \item Goal Tolerance Parameters: 設置目標姿勢的容忍度，包括位置和姿勢的容忍度。
+    \item Forward Simulation Parameters: 設置前向模擬的參數，包括模擬時間和速度取樣。
+    \item Trajectory Scoring Parameters: 設置軌跡評分的參數，包括對全局路徑計劃的依附程度、到達目標的優先度和避開障礙物的權重。
+    \item Oscillation Prevention Parameters: 設置防止機器人在同一位置徘徊的參數。
+    \item Debugging: 設置是否發佈軌跡和成本網格的點雲，以及全局坐標系的設置。
+\end{itemize}
+這些參數用於配置 DWAPlannerROS，以便生成機器人的軌跡，並確保機器人能夠安全且有效地移動到目標位置。
+
+\subsubsection{global\_costmap\_params.yaml}
+這段配置文件是用於設置全局代價地圖（global costmap）的參數。全局代價地圖是機器人在全局範圍內進行路徑規劃時考慮的地圖，通常用於避免障礙物和計算到達目標的路徑。
+
+\begin{itemize}
+    \item global\_frame: 設置全局代價地圖的坐標系。在這種情況下，地圖使用 "map" 坐標系。
+    \item resolution: 設置地圖的解析度，即每個單元格的大小。在這種情況下，解析度為 0.1 米。
+    \item rolling\_window: 指示是否使用滾動窗口方式來管理全局代價地圖。如果設置為 false，則表示使用固定窗口方式。滾動窗口方式可以在機器人移動時動態調整地圖，而固定窗口方式則不會。
+\end{itemize}
+
+\subsubsection{global\_planner\_params.yaml}
+
+於設置全局規劃器（Global Planner）的參數。全局規劃器用於計算機器人在全局地圖上的路徑，以達到目標位置。
+\begin{itemize}
+    \item old\_navfn\_behavior: 是否完全模仿navfn的行為，使用其他布林參數的默認值，默認為false。
+    \item use\_quadratic: 是否使用潛在場的二次近似。否則，使用一種更簡單的計算方法，默認為true。
+    \item use\_dijkstra: 是否使用Dijkstra算法。否則，使用A*算法，默認為true。
+    \item use\_grid\_path: 是否創建一條沿著網格邊界的路徑。否則，使用梯度下降法，默認為false。
+    \item allow\_unknown: 允許規劃器通過未知空間進行規劃，默認為true。需要在障礙物/體素層中設置track\_unknown\_space: true才能正常工作。
+    \item planner\_window\_x, planner\_window\_y: 規劃器視窗的大小，默認為0.0。
+    \item default\_tolerance: 如果目標在障礙物中，則計劃到半徑default\_tolerance內的最近點，默認為0.0。
+    \item publish\_scale: 發布的潛在場尺度，默認為100。
+    \item planner\_costmap\_publish\_frequency: 規劃器代價地圖的發布頻率，默認為0.0。
+    \item lethal\_cost: 致命代價，默認為253。
+    \item neutral\_cost: 中性代價，默認為50。
+    \item cost\_factor: 將每個代價從代價地圖中的每個代價乘以的因子，默認為3.0。
+    \item publish\_potential: 是否發布潛在場地圖（這不像navfn pointcloud2的潛在場地圖），默認為true。
+\end{itemize}
+
+\subsubsection{local\_costmap\_params.yaml}
+這段配置文件是用於設置局部代價地圖（Local Costmap）的參數。局部代價地圖用於在機器人周圍創建一個代價地圖，以便計劃器可以避免障礙物。
+
+\begin{itemize}
+    \item rolling\_window: 是否使用滾動窗口模式，默認為true。滾動窗口模式意味著只保留機器人周圍的地圖部分，隨著機器人的移動而更新地圖。
+    \item resolution: 代價地圖的解析度，即每個單元格的大小，默認為0.1米。
+    \item inflation\_radius: 充氣半徑，用於將障礙物周圍的代價值增加，使機器人有更大的安全距離，默認為0.2米。
+    \item width, height: 代價地圖的寬度和高度，以米為單位，默認為2.0米。
+    \item plugins: 代價地圖使用的插件列表。在這個配置中，只有一個插件 obstacle\_layer，用於處理障礙物層的配置。
+    \item obstacle\_layer: 障礙物層的配置，包括觀測源和雷射掃描傳感器的相關信息。
+\end{itemize}
+
+\subsubsection{move\_base\_params.yaml}
+
+這段配置文件是用於 Move Base 的參數設置，Move Base 是 ROS 中用於機器人導航的重要組件之一。以下是這些參數的解釋：
+
+\begin{itemize}
+    \item shutdown\_costmaps: 是否在 Move Base 結束時關閉代價地圖，默認為false。
+    \item controller\_frequency: 控制器更新頻率，默認為10.0 Hz。
+    \item controller\_patience: 控制器等待時間，超過這個時間仍然沒有達到目標，將視為失敗，默認為15.0秒。
+    \item planner\_frequency: 規劃器更新頻率，默認為5.0 Hz。
+    \item planner\_patience: 規劃器等待時間，超過這個時間仍然沒有找到計劃，將視為失敗，默認為5.0秒。
+    \item oscillation\_timeout: 搖擺避障超時時間，即機器人在同一地點來回搖擺的最大時間，默認為10.0秒。
+    \item oscillation\_distance: 搖擺避障距離，即機器人視為搖擺的最小移動距離，默認為0.2米。
+    \item conservative\_reset\_dist: 保守重置距離，當機器人與目標之間的距離超過此距離時，將重置規劃器，默認為3.0米。
+    \item base\_local\_planner: 使用的本地規劃器，默認為"dwa\_local\_planner/DWAPlannerROS"，即動態窗口法（DWA）規劃器。
+    \item base\_global\_planner: 使用的全局規劃器，默認為"navfn/NavfnROS"，即導航函數（Navfn）規劃器，也可以選擇其他全局規劃器，
+\end{itemize}
+
+\subsubsection{navfn\_global\_planner\_params.yaml}
+這是用於 NavfnROS 全局路徑規劃器的參數配置。NavfnROS 是 ROS 中的一個基於 A* 算法的全局路徑規劃器。以下是這些參數的含義：
+
+\begin{itemize}
+    \item visualize\_potential: 是否將潛在場景視覺化為點雲，在 RViz 中顯示，默認為false。
+    \item allow\_unknown: 是否允許規劃器在未知空間中創建計劃，默認為false。需要在代價地圖參數中將 track\_unknown\_space 設置為 true 才能生效。
+    \item planner\_window\_x 和 planner\_window\_y: 限制規劃範圍的窗口大小，默認為0.0，表示不限制範圍。
+    \item default\_tolerance: 如果目標在障礙物內，規劃器將規劃到最接近目標的半徑內的點，默認為0.0。這個值越大，搜索範圍越廣，計算速度可能變慢。
+\end{itemize}
+
+
+\subsection{launch(啟動)檔}
+\begin{table}[ht]
+\centering
+\caption{參數檔}
+\label{tab:nvlaunch}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{檔名} & \textbf{功能} \\
+\hline
+gmapping.launch & 啟動 GMapping SLAM 算法的 launch 檔案。\\
+\hline
+map.launch & 發佈地圖的 ROS launch 檔案。\\
+\hline
+move\_base.launch & 啟動 move\_base 導航節點的 launch 檔案。\\
+\hline
+navigation.launch &  啟動導航相關節點和服務的 launch 檔案。\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{gmapping.launch}
+程式碼是用來啟動一個叫做 slam\_gmapping 的 ROS 節點，這個節點用於將激光掃描數據轉換成地圖，並實現機器人的同時定位和地圖構建（SLAM）功能。以下是這段程式碼中的一些重要參數和功能：
+
+
+\begin{itemize}
+    \item scan\_topic 參數用來指定激光掃描的 ROS 主題名稱，預設為 "scan"，可以通過這個參數來動態改變節點訂閱的激光掃描主題。
+    \item odom\_frame、base\_frame 和 map\_frame 分別是機器人里程計、基礎座標和地圖座標的框架名稱。
+    \item maxUrange 和 maxRange 分別是激光傳感器的最大可用範圍和最大範圍。
+    \item transform\_publish\_period 是 tf 廣播的時間間隔，用於發布機器人的位姿。
+    \item linearUpdate 和 angularUpdate 分別是機器人平移和旋轉的最小距離，用於確定何時處理一次新的掃描。
+    \item particles 是粒子濾波器中的粒子數量，用於估計機器人的姿勢。
+    \item xmin、ymin、xmax 和 ymax 定義了地圖的初始大小。
+    \item 其他參數如 sigma、kernelSize、lstep、astep、iterations 等用於控制地圖建構過程中的不同參數和算法。
+\end{itemize}
+\subsubsection{map.launch}
+這段程式碼設定了兩個ROS節點，用於地圖轉換和地圖服務器。
+
+\begin{itemize}
+    \item static\_transform\_publisher 用於發佈靜態的座標變換，即發佈 map 到 odom 座標系之間的關係。參數 args="0 0 0 0 0 0 1 map odom" 指定了變換的平移和旋轉關係，這對於機器人的定位至關重要。
+    \item map\_server 節點是一個地圖服務器，用於發佈地圖數據。它會讀取指定的地圖文件（參數 \$(arg map\_file)），並將地圖數據發佈到 /map 和 /map\_metadata 主題上，供其他節點使用。
+\end{itemize}
+
+\subsubsection{move\_base.launch}
+這段程式碼是一個包含多個節點的ROS launch文件，用於建立一個包含地圖、定位、導航和移動基地等功能的機器人系統。
+
+\begin{itemize}
+    \item static\_transform\_publisher 節點用於發佈 map 到 odom 座標系之間的靜態座標變換關係。
+    \item map\_server 節點負責讀取地圖文件並發佈地圖數據到 /map 和 /map\_metadata 主題。
+    \item amcl 是用於機器人定位的節點，包含在 amcl\_diff.launch 文件中，設置了訂閱 /scan、/tf、/initialpose 和 /map 主題，並發佈 /amcl\_pose、/particlecloud 和 /tf 主題。
+
+    \item move\_base 節點是導航功能的核心，接收目標位置信息，通過 base\_local\_planner 執行運動控制，並通過 global\_costmap 和 local\_costmap 規劃全局和局部地圖。
+\end{itemize}
+
+這個 launch 文件集成了機器人的地圖、定位、導航和移動基地功能，使得機器人能夠在已知地圖中進行自主導航。
+
+
+\subsubsection{navigation.launch}
+這個 launch 文件配置了機器人的地圖、定位、導航和移動基地功能。
+
+\begin{itemize}
+    \item static\_transform\_publisher 節點用於發佈 map 到 odom 座標系之間的靜態座標變換關係。
+    \item map\_server 節點負責讀取地圖文件並發佈地圖數據到 /map 和 /map\_metadata 主題。
+    \item amcl 是用於機器人定位的節點，包含在 amcl\_diff.launch 文件中，設置了訂閱 /scan、/tf、/initialpose 和 /map 主題，並發佈 /amcl\_pose、/particlecloud 和 /tf 主題。
+    \item move\_base 節點是導航功能的核心，接收目標位置信息，通過 dwa\_local\_planner 和 global\_planner 執行運動控制，並通過 global\_costmap 和 local\_costmap 規劃全局和局部地圖。
+\end{itemize}
+
+這個 launch 文件集成了機器人的地圖、定位、導航和移動基地功能，使得機器人能夠在已知地圖中進行自主導航。
+
+
+
+
+
+
+
+
+

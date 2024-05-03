@@ -1,0 +1,66 @@
+控制馬達我們要注意的幾個部份
+\begin{enumerate}
+    \item 控制訊息的格式
+    \item arduino 與ros 之間的通訊
+    \item PID控制器
+    \item 編碼器計算
+    \item 里程計計算
+\end{enumerate}
+
+\subsection{控制訊息格式}
+下面有兩個本次在輪組控制時用到的格式，一個ros內建的用於表示機器在空間中的狀態，
+如線性方向的變化(x,y,z)與旋轉變化的(x,y,z)，另外一個是我自訂意的變數格式用於表示兩個
+輪子的轉動速度(rps)
+\begin{itemize}
+    \item geometry\_msgs/msg/Twist
+    \item diff\_robot\_description/msg/Wheel
+\end{itemize}
+\begin{tcolorbox}
+\begin{verbatim}
+ros2 interface show diff_robot_description/msg/Wheel        
+--------------------------------------------------------
+float64 left_wheel_speed   # 左輪轉速
+float64 right_wheel_speed  # 右輪轉速
+\end{verbatim}
+\end{tcolorbox}
+\begin{tcolorbox}
+\begin{verbatim}
+ros2 interface show geometry_msgs/msg/Twist
+-------------------------------------------------------------------------------
+# This expresses velocity in free space broken into its linear and angular parts.
+Vector3  linear
+	float64 x
+	float64 y
+	float64 z
+Vector3  angular
+	float64 x
+	float64 y
+	float64 z
+\end{verbatim}
+\end{tcolorbox}
+
+
+\subsection{arduino與ros通訊}
+我們這次是用uart通訊來做arduino與ros之間的數據交換。
+ros可以用python 的pyserial套件來做urat通訊，arduino用serial就可以了。
+\begin{itemize}
+    \item ros給arduino目標轉速
+    \item arduino給ros測量轉速
+\end{itemize}
+
+\subsection{PID}
+PID馬達控制透過比例、積分、微分控制器調節馬達輸出，
+使實際速度接近目標速度。比例控制速度誤差、
+積分控制積累誤差、微分控制速度變化率，綜合調整可達到
+精準控制效果。可以參考
+\href{https://geekeeceebee.com/index.html}{PID馬達控制}
+
+本次使用
+\href{https://github.com/br3ttb/Arduino-PID-Library/tree/master}{arduino pid}
+的套件
+
+\begin{itemize}
+    \item Setpoint:目標轉速
+    \item Input:測量轉速
+    \item Output:pwm輸出量
+\end{itemize}

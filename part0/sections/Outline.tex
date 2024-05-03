@@ -1,0 +1,41 @@
+
+我們的專題目前訂成ros2的自走車，最基本的功能就是要作到可以在
+地圖上指定一個點他就會自行前往。
+
+要達到這個功能，就要用到\href{https://navigation.ros.org/}{nav2}的功能，我原先參考的資料有下面。
+\begin{itemize}
+    \item \href{https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/}{turtlebot3} 
+    \item \href{https://github.com/dblanding/diy-ROS-robot/tree/main}{diy ros}
+\end{itemize}
+
+我原先是打算用turtlebot3的套件但是，價格真的不是很低而且他們為了
+後續的升級基本上用到的零件都超出需要的性能，所以我嘗試找有沒有土
+炮的版本，就被我找到
+\href {https://github.com/dblanding}{dblanding}
+大大的板本，我算了一下架個大約會在1w上下，但是有些零件實驗室應該
+會有。
+
+所以我們就先以完成dblanding大大的版本為一個小目標之後看時間，如
+果我們做太慢，就這樣就好。
+
+\subsection{任務}
+
+根據dblanding的github上的資料，他把整體分成下面幾個部份。
+\begin{enumerate}
+    \item    wheels：輪子控制相關程序
+    \item    odom\_pub：里程計數據發布程序
+    \item    robot\_nav：機器人導航程序和配置
+    \item    robot\_params：機器人參數配置
+    \item    bringup：啟動配置和程序管理
+\end{enumerate}
+
+單然這要有ros的概念，很不幸的他是用ros1做的而且在2025ros1就不再
+會有更新，所以我們會用ros2的版本。
+
+\subsection{先備知識}
+要有以下的概念會比較好。
+\begin{itemize}
+    \item linux 的指令操作(ssh)
+    \item ros2 的通訊概念
+    \item python
+\end{itemize}

@@ -1,0 +1,221 @@
+
+\subsection{操作方法}
+
+本次使的lidar是RPLIDAR-A1，再有ros2的套件輔助下我們可以教簡
+單使用。
+\begin{enumerate}
+    \item 使用git把原始碼安裝在工作目錄
+    \item 編譯原始碼
+    \item 執行測試
+\end{enumerate}
+\subsubsection{安裝編譯原始碼}
+動作流程如下。
+\begin{tcolorbox}
+\begin{verbatim}
+    cd ~/ros2_ws/src
+    git clone https://github.com/Slamtec/sllidar_ros2
+    cd ../ 
+    rosdep install -i --from-path src --rosdistro humble -y
+    colcon build --packages-select sllidar_ros2
+\end{verbatim}
+\end{tcolorbox}
+\begin{enumerate}
+    \item 移動到工作目錄的原始碼資料夾
+    \item 下載lidar的套件
+    \item 回到工作根目錄
+    \item 檢查相依程式
+    \item 開始編譯
+\end{enumerate}
+\subsubsection{測試與使用}
+編譯完原始碼的話基本上就可以使用了，使用方法如下
+\begin{tcolorbox}
+\begin{verbatim}
+    source install/setup.zsh    
+    ros2 launch sllidar_ros2 sllidar_a1_launch.py
+    #可以選折下面有視覺化設定的
+    ros2 launch sllidar_ros2 view_sllidar_a1_launch.py
+\end{verbatim}
+\end{tcolorbox}
+\begin{enumerate}
+    \item 啟用ros2環境
+    \item 開啟lidar的請動檔
+\end{enumerate}
+這邊要注意使用的光達型號不同型號有對應的啟動檔，也可以直接
+使用可是化的啟動檔view開頭的那個。
+\subsection{檢視資料}
+接下來就以觀察這個套件有哪些要注意的地方。
+
+\begin{itemize}
+    \item 開啟的節點
+    \item 主題的發布與訂閱
+    \item 資料的格式
+    \item 節點參數
+\end{itemize}
+\subsubsection{節點說明}
+這個光達啟動檔產生的節點為/sllidar\_node，我們可以用info查
+詢相關訊息。
+\begin{tcolorbox}
+\begin{verbatim}
+    ros2 node info /sllidar\_node
+\end{verbatim}
+\end{tcolorbox}
+這樣可以看到下面有關node的通訊狀況，包含他會訂閱/發布哪些主
+題與服務根動作。
+\begin{itemize}
+    \item 訂閱器（Subscribers）：
+        \begin{itemize}
+            \item /parameter\_events：訂閱參數事件的消息，
+                類型為 rcl\_interfaces/msg/ParameterEvent。
+        \end{itemize}
+    \item 發布器（Publishers）：
+
+        \begin{itemize}
+            \item /parameter\_events：發布參數事件的消息，
+                類型為 rcl\_interfaces/msg/ParameterEvent。
+            \item /rosout：發布ROS的日誌消息，類型為 
+                rcl\_interfaces/msg/Log。
+            \item /scan：發布激光雷達掃描消息，類型為 
+                sensor\_msgs/msg/LaserScan。
+        \end{itemize}
+    \item 服務伺服器（Service Servers）：
+        \begin{itemize}
+            \item /sllidar\_node/describe\_parameters：提供描
+                述參數的服務，類型為 \\
+                rcl\_interfaces/srv/DescribeParameters。
+            \item /sllidar\_node/get\_parameter\_types：提供獲
+                取參數類型的服務，類型為 \\
+                rcl\_interfaces/srv/GetParameterTypes。
+            \item /sllidar\_node/get\_parameters：提供獲取參數
+                值的服務，類型為 \\
+                rcl\_interfaces/srv/GetParameters。
+            \item /sllidar\_node/list\_parameters：
+                提供列出參數的服務，類型為\\
+                rcl\_interfaces/srv/ListParameters。
+            \item /sllidar\_node/set\_parameters：
+                提供設置參數值的服務，類型為 \\
+                rcl\_interfaces/srv/SetParameters。
+            \item /sllidar\_node/set\_parameters\_atomically：
+                提供原子設置多個參數值的服務，類型為 \\
+                rcl\_interfaces/srv/SetParametersAtomically。
+            \item /start\_motor：提供啟動馬達的服務，
+                類型為 std\_srvs/srv/Empty。
+            \item /stop\_motor：提供停止馬達的服務，類型為 
+                std\_srvs/srv/Empty。
+        \end{itemize}
+    \item 服務客戶端（Service Clients）：（未提供）
+    \item 動作伺服器（Action Servers）：（未提供）
+    \item 動作客戶端（Action Clients）：（未提供）
+\end{itemize}
+
+這些功能使得sllidar\_node節點能夠與其他節點進行通訊和交互操作，從而實現控制和獲取激光雷達的功能。
+
+\subsubsection{topic查詢}
+首先要確認/scan的訊息。
+\begin{tcolorbox}
+\begin{verbatim}
+    ros2 lidar info /scan
+------------------------------------------
+Type: sensor_msgs/msg/LaserScan
+Publisher count: 1
+Subscription count: 0
+\end{verbatim}
+\end{tcolorbox}
+我們看得出來他的，訂閱與發不的狀況根他的數據界面。
+再來我們可以用echo來監聽這個主題。
+\begin{tcolorbox}
+\begin{verbatim}
+    ros2 topic echo /scan --once
+-----------------------------------
+    header:
+  stamp:
+    sec: 1710051588
+    nanosec: 187130763
+  frame_id: laser
+angle_min: -3.1241390705108643
+angle_max: 3.1415927410125732
+angle_increment: 0.005806980188935995
+time_increment: 0.0001362734183203429
+scan_time: 0.1470390260219574
+range_min: 0.15000000596046448
+range_max: 12.0
+ranges:
+.......
+intensities:
+\end{verbatim}
+\end{tcolorbox}
+有關各個數值的意義如下
+\begin{itemize}
+    \item header：包含時間戳記（stamp）和框架 ID（frame\_id），用於確定訊息的時間和座標系。
+    \item stamp：時間戳記，以秒（sec）和納秒（nanosec）表示。
+    \item frame\_id：訊息的座標系標識符，在這裡是 laser。
+    \item angle\_min：激光雷達掃描的最小角度（弧度）。
+    \item angle\_max：激光雷達掃描的最大角度（弧度）。
+    \item angle\_increment：每個激光束之間的角度增量（弧度）。
+    \item time\_increment：每個激光束的時間增量（秒）。
+    \item scan\_time：完成一次完整掃描所需的時間（秒）。
+    \item range\_min：激光雷達能夠測量的最小距離（公尺）。
+    \item range\_max：激光雷達能夠測量的最大距離（公尺）。
+    \item ranges：每個激光束測量的距離值陣列。
+    \item intensities：每個激光束的強度值陣列（有些激光雷達可以測量強度，但並非所有）。
+\end{itemize}
+\subsubsection{參數查詢}
+接下來就是參數的訊息了，透過param dump來查看
+
+\begin{tcolorbox}
+\begin{verbatim}
+    ros2 param dump /sllidar_node
+-------------------------------------------
+/sllidar_node:
+  ros__parameters:
+    angle_compensate: true
+    channel_type: serial
+    frame_id: laser
+    inverted: false
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    scan_frequency: 10.0
+    scan_mode: ''
+    serial_baudrate: 115200
+    serial_port: /dev/ttyUSB0
+    tcp_ip: 192.168.0.7
+    tcp_port: 20108
+    udp_ip: 192.168.11.2
+    udp_port: 8089
+    use_sim_time: false
+\end{verbatim}
+\end{tcolorbox}
+這是sllidar\_node節點的參數設定。讓我們逐個解釋：
+\begin{enumerate}
+    \item angle\_compensate：角度補償，設置為true表示啟用角度補償。
+    \item channel\_type：通道類型，這裡設置為serial。
+    \item frame\_id：訊息的座標系標識符，在這裡是laser。
+    \item inverted：是否反向，設置為false表示不反向。
+    \item qos\_overrides：QoS覆蓋設定，這裡設置了一些QoS參數。
+    \item scan\_frequency：掃描頻率，設置為10.0 Hz。
+    \item serial\_baudrate：串口波特率，設置為115200。
+    \item serial\_port：串口端口，設置為/dev/ttyUSB0。
+    \item tcp\_ip：TCP IP地址，設置為192.168.0.7。
+    \item tcp\_port：TCP端口，設置為20108。
+    \item udp\_ip：UDP IP地址，設置為192.168.11.2。
+    \item udp\_port：UDP端口，設置為8089。
+    \item use\_sim\_time：使用模擬時間，設置為false表示不使用模擬時間。
+\end{enumerate}
+
+這些參數描述了sllidar\_node節點的配置，包括通訊方式、座標
+系、掃描頻率等，我們是走serial通訊的，所以要
+注意port的參數未來接上的設定。
+
+\subsection{資料視覺化}
+這裡我們用rviz可以更清楚的看到光達所掃掉的資料。
+
+\begin{enumerate}
+    \item 打開終端機
+    \item 輸入rviz2
+    \item 設定fixed frame = laser
+    \item 在add加入laser scan的資料
+\end{enumerate}

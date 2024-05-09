@@ -1,0 +1,38 @@
+launch 是ros的啟動檔，內容會是要啟動的節點與相關參數。
+所以了解launch就可以得知他啟動了什麼並且哪些參數是可以調整的。
+\subsection{online async launch}
+
+這個 launch 檔案設置了 slam\_toolbox 節點的生命週期管理。它允許根據提供的參數自動啟動節點並進行配置。如果 use\_lifecycle\_manager 設置為 false，節點將自動啟動。如果設置為 true，節點將等待通過生命週期管理器激活。
+\subsection{import 引用}
+\begin{itemize}
+    \item os 模組：用於與作業系統進行互動，例如獲取檔案路徑等。
+    \item ament\_index\_python.packages：用於獲取 ROS 2 中套件的路徑資訊。
+    \item launch 模組：ROS 2 中用於編寫 launch 檔案的 Python 庫。
+    \item DeclareLaunchArgument：用於聲明 launch 檔案中的啟動參數。
+    \item EmitEvent：用於發出事件，例如改變節點的狀態。
+    \item LogInfo：用於在終端中輸出訊息。
+    \item RegisterEventHandler：用於註冊事件處理程序，以便在發生特定事件時執行相應的動作。
+    \item IfCondition、AndSubstitution、NotSubstitution：用於設置條件，控制某些動作是否執行。
+    \item LifecycleNode：用於啟動一個具有生命週期管理功能的節點。
+    \item OnStateTransition：用於設置當節點的狀態發生變化時要執行的動作。
+    \item ChangeState：用於指定節點狀態的變化，例如從配置狀態變為啟動狀態。
+    \item Transition：定義了生命週期狀態機中的過渡狀態。
+\end{itemize}
+
+\subsection{啟動參數}
+
+四個啟動參數，它們將在後續的 launch 檔案中使用。
+\begin{itemize}
+    \item autostart：這個參數用於控制是否自動啟動 slam\_toolbox 節點。當設置為 true 時，節點將在啟動時自動啟動。如果設置為 false，則節點需要手動啟動。
+    \item use\_lifecycle\_manager：這個參數用於控制是否使用生命週期管理器來管理節點的啟動和停止。如果設置為 true，則節點將等待生命週期管理器的指令來啟動。如果設置為 false，則節點將忽略生命週期管理器。
+    \item use\_sim\_time：這個參數用於控制是否使用模擬時間。如果設置為 true，則節點將使用模擬器提供的時間信息。如果設置為 false，則節點將使用實際的系統時間。
+    \item slam\_params\_file：這個參數用於指定 slam\_toolbox 節點的參數檔案路徑。該檔案包含了節點在運行時所需的配置參數。
+\end{itemize}
+
+\subsection{Decare Launch Argument}
+這些程式碼片段定義了四個 DeclareLaunchArgument 命令，用於聲明 launch 檔案中的啟動參數。這些命令將在後續的 launch 檔案中使用，用於設定節點的啟動參數。
+
+declare_autostart_cmd：定義了 autostart 參數，該參數用於控制是否自動啟動 slam_toolbox 節點。預設值為 true，意味著節點將在啟動時自動啟動。該參數在 use_lifecycle_manager 設置為 true 時將被忽略。
+declare_use_lifecycle_manager：定義了 use_lifecycle_manager 參數，該參數用於控制是否使用生命週期管理器來管理節點的啟動和停止。預設值為 false，表示不使用生命週期管理器。
+declare_use_sim_time_argument：定義了 use_sim_time 參數，該參數用於控制是否使用模擬時間。預設值為 true，表示使用模擬器提供的時間信息。
+declare_slam_params_file_cmd：定義了 slam_params_file 參數，該參數用於指定 slam_toolbox 節點的參數檔案路徑。預設值為指向 slam_toolbox 套件中 config 目錄下的 mapper_params_online_async.yaml 檔案的路徑。

@@ -1,0 +1,81 @@
+ros2 有yolov8的套件可以用
+\href{https://github.com/mgonzs13/yolov8_ros/tree/main}{yolov8\_ros}。
+\subsection{安裝方法}
+流程如下，就照指令做就好了。
+\begin{tcolorbox}
+\begin{verbatim}
+ cd ~/ros2_ws/src
+ git clone https://github.com/mgonzs13/yolov8_ros.git
+ pip3 install -r yolov8_ros/requirements.txt
+ cd ~/ros2_ws
+ rosdep install --from-paths src --ignore-src -r -y
+ colcon build
+\end{verbatim}
+\end{tcolorbox}
+\subsection{基本操作}
+\begin{tcolorbox}
+\begin{verbatim}
+$ ros2 launch yolov8_bringup yolov8.launch.py
+\end{verbatim}
+\end{tcolorbox}
+\subsection{主題與參數}
+\begin{itemize}
+    \item Topics
+    \begin{itemize}
+        \item /yolo/detections: Objects detected by YOLO using the RGB images. Each object contains a bounding boxes and a class name. It may also include a mak or a list of keypoints.
+        \item /yolo/tracking: Objects detected and tracked from YOLO results. Each object is assigned a tracking ID.
+        \item /yolo/debug\_image: Debug images showing the detected and tracked objects. They can be visualized with rviz2.
+    \end{itemize}
+    \item Parameters
+    \begin{itemize}
+        \item model: YOLOv8 model (default: yolov8m.pt)
+        \item tracker: Tracker file (default: bytetrack.yaml)
+        \item device: GPU/CUDA (default: cuda:0)
+        \item enable: Wether to start YOLOv8 enabled (default: True)
+        \item threshold: Detection threshold (default: 0.5)
+        \item input\_image\_topic: Camera topic of RGB images (default: /camera/rgb/image\_raw)
+        \item  image\_reliability: Reliability for the image topic: 0=system default, 1=Reliable, 2=Best Effort (default: 2)
+    \end{itemize}
+\end{itemize}
+\subsection{注意事項}
+使用時他會去訂閱/camera/rgb/image\_raw的topic所以要把想要做辨識的圖發布到這裡。
+
+\subsection{程式分析}
+\subsubsection{yolov8\_node.py}
+
+這段程式碼是一個 ROS 2 節點，用於在圖像中偵測和追蹤物體，並且發布偵測到的物體資訊。
+節點使用 YOLOv8 模型進行物體偵測，並透過 ROS 2 訊息將偵測到的物體發布出去。
+
+該節點繼承自 LifecycleNode 類別，實現了節點的生命週期方法
+（on\_configure、on\_activate、\\ on\_deactivate、on\_cleanup），
+並實現了 enable\_cb 方法來處理啟用/禁用節點的服務請求。
+節點還實現了一些輔助方法來解析 YOLOv8 的偵測結果，並將結果轉換為 ROS 2 訊息。
+
+在 main 函數中，節點初始化後手動觸發了配置和啟用操作，
+並通過 rclpy.spin(node) 來啟動節點的訊息迴圈，等待訊息的到來和處理。\href{https://github.com/mgonzs13/yolov8_ros/blob/main/yolov8_ros/yolov8_ros/yolov8_node.py}{src}
+
+
+\begin{itemize}
+    \item \_\_init\_\_(self, **kwargs) 
+        None: 初始化函式，用於初始化節點的各種參數和屬性。
+    \item on\_configure(self, state: LifecycleState) \\
+        TransitionCallbackReturn: 配置函式，用於配置節點在啟動前的相關設置。
+    \item enable\_cb(self, request, response): 啟用/禁用節點的服務回調函式。
+    \item on\_activate(self, state: LifecycleState) \\
+        TransitionCallbackReturn: 啟動函式，用於啟動節點並開始執行相應的任務。
+    \item on\_deactivate(self, state: LifecycleState) \\
+        TransitionCallbackReturn: 停用函式，用於停用節點並進行清理工作。
+    \item on\_cleanup(self, state: LifecycleState) \\
+        TransitionCallbackReturn: 清理函式，用於在節點結束運行時進行清理工作。
+    \item parse\_hypothesis(self, results: Results) \\
+        List[Dict]: 解析假設的函式，用於解析物體偵測的結果，返回一個假設列表。
+    \item parse\_boxes(self, results: Results)\\
+         List[BoundingBox2D]: 解析框框的函式，用於解析物體偵測的結果，返回一個框框列表。
+    \item parse\_masks(self, results: Results) \\
+        List[Mask]: 解析遮罩的函式，用於解析物體偵測的結果，返回一個遮罩列表。
+    \item parse\_keypoints(self, results: Results) \\
+        List[KeyPoint2DArray]: 解析關鍵點的函式，用於解析物體偵測的結果，返回一個關鍵點列表。
+    \item image\_cb(self, msg: Image) \\
+        None: 圖像回調函式，用於接收來自訂閱的圖像訊息並進行物體偵測處理
+\end{itemize}
+

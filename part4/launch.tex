@@ -17,6 +17,7 @@ launch 是ros的啟動檔，內容會是要啟動的節點與相關參數。
     \item OnStateTransition：用於設置當節點的狀態發生變化時要執行的動作。
     \item ChangeState：用於指定節點狀態的變化，例如從配置狀態變為啟動狀態。
     \item Transition：定義了生命週期狀態機中的過渡狀態。
+    \item LaunchConfiguration 允許在 launch 檔案中定義和使用參數，這樣可以使檔案更具靈活性和可配置性。
 \end{itemize}
 
 \subsection{啟動參數}
@@ -63,4 +64,20 @@ launch 是ros的啟動檔，內容會是要啟動的節點與相關參數。
         在節點的生命週期從 configuring 變為 inactive 時執行指定的動作，\\
         包括輸出一條訊息並發出 ChangeState 事件，將節點的生命週期狀態變為 active。
 \end{itemize}
+
+\subsection{啟動}
 總的來說，這些事件確保了在特定條件下，slam\_toolbox 節點將按照指定的生命週期過程進行配置和激活。
+
+
+這段程式碼將上述定義的動作（actions）添加到了 LaunchDescription 中，並返回了這個 LaunchDescription 對象。
+
+\begin{itemize}
+    \item ld.add\_action(declare\_autostart\_cmd)：將自動啟動參數的聲明添加到 LaunchDescription 中。
+    \item ld.add\_action(declare\_use\_lifecycle\_manager)：將生命週期管理器參數的聲明添加到 LaunchDescription 中。
+    \item ld.add\_action(declare\_use\_sim\_time\_argument)：將使用模擬時間參數的聲明添加到 LaunchDescription 中。
+    \item ld.add\_action(declare\_slam\_params\_file\_cmd)：將 SLAM 參數檔案路徑的聲明添加到 LaunchDescription 中。
+    \item ld.add\_action(start\_async\_slam\_toolbox\_node)：將啟動 SLAM 節點的動作添加到 LaunchDescription 中。
+    \item ld.add\_action(configure\_event)：將配置事件的動作添加到 LaunchDescription 中。
+    \item ld.add\_action(activate\_event)：將激活事件的動作添加到 LaunchDescription 中。
+\end{itemize}
+最後，將這個 LaunchDescription 對象返回，這樣整個 launch 檔案就包含了以上所有的配置和動

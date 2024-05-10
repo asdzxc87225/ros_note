@@ -1,0 +1,139 @@
+\subsection{mapper params online async}
+這個參數檔用於配置 SLAM Toolbox 節點的行為，其中包含了各種參數，用於控制地圖建立和更新過程、掃描匹配、迴圈關閉等功能。主要功能包括：
+
+\begin{enumerate}
+    \item 配置 Ceres Solver 的參數，用於最小二乘問題的優化。
+    \item 指定里程計座標幀、地圖座標幀、底盤座標幀和 LiDAR 掃描話題等 ROS 參數。
+    \item 控制 SLAM 模式，可以是地圖建立（mapping）或定位（localization）。
+    \item 設置調試日誌記錄、發布 TF 轉換頻率等調試和時間相關的參數。
+    \item 配置堆棧大小、是否使用掃描匹配和掃描重心、迴圈關閉等一般參數。
+    \item 設置相關性搜索空間和迴圈搜索空間的維度、分辨率和模糊偏差等相關性和迴圈關閉參數。
+    \item 設置掃描匹配的距離和角度方差懲罰、搜索角度偏移等掃描匹配參數。
+    \item 這些參數可以根據不同的應用需求進行調整，從而達到最佳的 SLAM 效果。透過調整這些參數，可以使 SLAM 系統在不同的環境和應用場景下表現更好。
+\end{enumerate}
+\subsubsection{Plugin 參數}
+\begin{enumerate}
+    \item solver\_plugin: solver\_plugins::CeresSolver
+    \\使用的優化器插件。這裡使用了 CeresSolver。
+    \item ceres\_linear\_solver: SPARSE\_NORMAL\_CHOLESKY
+    \\CeresSolver 使用的線性求解器類型。這裡使用的是 SPARSE\_NORMAL\_CHOLESKY。
+    \item ceres\_preconditioner: SCHUR\_JACOBI
+    \\CeresSolver 使用的預條件器類型。這裡使用的是 SCHUR\_JACOBI。
+    \item ceres\_trust\_strategy: LEVENBERG\_MARQUARDT
+    \\CeresSolver 使用的信任區域策略。這裡使用的是 LEVENBERG\_MARQUARDT。
+    \item ceres\_dogleg\_type: TRADITIONAL\_DOGLEG
+    \\CeresSolver 使用的 Dogleg 型別。這裡使用的是 TRADITIONAL\_DOGLEG。
+    \item ceres\_loss\_function: None
+    \\CeresSolver 使用的損失函數。這裡表示不使用損失函數。
+\end{enumerate}
+\subsubsection{ROS 參數}
+\begin{enumerate}
+    \item odom\_frame: odom
+    \\使用的里程計座標幀。
+    \item map\_frame: map
+    \\使用的地圖座標幀。
+    \item base\_frame: base\_footprint
+    \\使用的底盤座標幀。
+    \item scan\_topic: /scan
+    \\使用的 LiDAR 掃描話題。
+    \item use\_map\_saver: true
+    \\是否使用地圖保存器。
+    \item mode: mapping
+    \\SLAM 模式，可以是 mapping（地圖建立）或 localization（定位）。
+\end{enumerate}
+\subsubsection{Debugging參數}
+\begin{enumerate}
+    \item debug\_logging: false
+    \\是否啟用調試日誌記錄。
+\end{enumerate}
+\subsubsection{Timing 參數}
+\begin{enumerate}
+    \item throttle\_scans: 1
+    \\掃描節流器，控制掃描的頻率。
+    \item transform\_publish\_period: 0.02
+    \\發布 odometry 轉換到 TF 的頻率。
+    \item map\_update\_interval: 5.0
+    \\地圖更新的間隔時間。
+    \item resolution: 0.05
+    \\地圖的解析度。
+    \item max\_laser\_range: 20.0
+    \\最大雷射範圍。
+    \item minimum\_time\_interval: 0.5
+    \\最小更新間隔時間。
+    \item transform\_timeout: 0.2
+    \\轉換超時時間。
+    \item tf\_buffer\_duration: 30.0
+    \\TF 緩衝區持續時間。
+\end{enumerate}
+\subsubsection{General 參數}
+\begin{enumerate}
+    \item stack\_size\_to\_use: 40000000
+    \\使用的堆棧大小。
+    \item enable\_interactive\_mode: true
+    \\啟用交互模式。
+    \item use\_scan\_matching: true
+    \\是否使用掃描匹配。
+    \item use\_scan\_barycenter: true
+    \\是否使用掃描重心。
+    \item minimum\_travel\_distance: 0.5
+    \\最小行進距離。
+    \item minimum\_travel\_heading: 0.5
+    \\最小行進方向。
+    \item scan\_buffer\_size: 10
+    \\掃描緩衝區大小。
+    \item scan\_buffer\_maximum\_scan\_distance: 10.0
+    \\掃描緩衝區的最大掃描距離。
+    \item link\_match\_minimum\_response\_fine: 0.1
+    \\鏈接匹配的最小細節響應。
+    \item link\_scan\_maximum\_distance: 1.5
+    \\鏈接掃描的最大距離。
+    \item loop\_search\_maximum\_distance: 3.0
+    \\迴圈搜索的最大距離。
+    \item do\_loop\_closing: true
+    \\是否執行迴圈關閉。
+    \item loop\_match\_minimum\_chain\_size: 10
+    \\迴圈匹配的最小鏈大小。
+    \item loop\_match\_maximum\_variance\_coarse: 3.0
+    \\迴圈匹配的最大變異度（粗匹配）。
+    \item loop\_match\_minimum\_response\_coarse: 0.35
+    \\迴圈匹配的最小響應（粗匹配）。
+    \item loop\_match\_minimum\_response\_fine: 0.45
+    \\迴圈匹配的最小響應（細匹配）。
+\end{enumerate}
+\subsubsection{ Correlation 參數}
+\begin{enumerate}
+    \item correlation\_search\_space\_dimension: 0.5
+    \\相關性搜索空間的維度。
+    \item correlation\_search\_space\_resolution: 0.01
+    \\相關性搜索空間的分辨率。
+    \item correlation\_search\_space\_smear\_deviation: 0.1
+    \\相關性搜索空間的模糊偏差。
+\end{enumerate}
+\subsubsection{ Loop Closure參數}
+\begin{enumerate}
+    \item loop\_search\_space\_dimension: 8.0
+    \\迴圈搜索空間的維度。
+    \item loop\_search\_space\_resolution: 0.05
+    \\迴圈搜索空間的分辨率。
+    \item loop\_search\_space\_smear\_deviation: 0.03
+    \\迴圈搜索空間的模糊偏差。
+\end{enumerate}
+\subsubsection{ Scan Matcher參數}
+\begin{enumerate}
+    \item distance\_variance\_penalty: 0.5
+    \\距離方差懲罰。
+    \item angle\_variance\_penalty: 1.0
+    \\角度方差懲罰。
+    \item fine\_search\_angle\_offset: 0.00349
+    \\細搜索角度偏移。
+    \item coarse\_search\_angle\_offset: 0.349
+    \\粗搜索角度偏移。
+    \item coarse\_angle\_resolution: 0.0349
+    \\粗角度解析度。
+    \item minimum\_angle\_penalty: 0.9
+    \\最小角度懲罰。
+    \item minimum\_distance\_penalty: 0.5
+    \\最小距離懲罰。
+    \item use\_response\_expansion: true
+    \\是否使用響應擴展。
+\end{enumerate}
